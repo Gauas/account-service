@@ -70,7 +70,7 @@ Gau Account Infra is a microservice developed in Go, responsible for managing us
 
    ```bash
    git clone https://github.com/tnqbao/gau-account-service.git
-   cd gau-account-service
+   cd account-service
    ```
 
 2. Cài đặt các phụ thuộc | Install dependencies:
@@ -102,13 +102,13 @@ Gau Account Infra is a microservice developed in Go, responsible for managing us
 1. Build Docker image:
 
    ```bash
-   docker build -t gau-account-service .
+   docker build -t account-service .
    ```
 
 2. Run container:
 
    ```bash
-   docker run --env-file .env -p 8080:8080 gau-account-service
+   docker run --env-file .env -p 8080:8080 account-service
    ```
 
 ## Triển khai Kubernetes | Kubernetes Deployment

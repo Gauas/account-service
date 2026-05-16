@@ -1,4 +1,4 @@
--- Final consolidated migration for gau-account-service database schema
+-- Final consolidated migration for account-service database schema
 -- This migration creates the complete database structure
 
 -- Drop existing tables if they exist
