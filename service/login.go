@@ -1,14 +1,13 @@
 package service
 
 import (
-	"context"
-
 	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/middlewares"
 	"github.com/labstack/echo/v4"
 )
 
-func (s *Service) Login(ctx context.Context, req dto.LoginRequest) (echo.Map, error) {
+func (s *Service) Login(c echo.Context, req dto.LoginRequest) (echo.Map, error) {
+	ctx := c.Request().Context()
 	user, err := s.Repository.User.Take(ctx, "email = ?", req.Email)
 	if err != nil {
 		return nil, err
@@ -18,9 +17,7 @@ func (s *Service) Login(ctx context.Context, req dto.LoginRequest) (echo.Map, er
 		return nil, echo.NewHTTPError(401, "invalid credentials")
 	}
 
-	deviceID, _ := ctx.Value(middlewares.DeviceIDKey).(string)
-
-	tokenPair, err := s.Infra.AuthSDK.CreateToken(ctx, user.UserID, user.Permission, deviceID)
+	tokenPair, err := s.Infra.AuthSDK.CreateToken(ctx, user.UserID, user.Permission, middlewares.DeviceID(ctx))
 	if err != nil {
 		return nil, err
 	}

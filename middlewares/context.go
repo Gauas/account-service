@@ -1,6 +1,10 @@
 package middlewares
 
-import "context"
+import (
+	"context"
+
+	"github.com/labstack/echo/v4"
+)
 
 type contextKey string
 
@@ -26,4 +30,19 @@ func DeviceID(ctx context.Context) string {
 	deviceID, _ := ctx.Value(deviceIDKey).(string)
 
 	return deviceID
+}
+
+func RefreshToken(ctx echo.Context) string {
+	token := ctx.Request().Header.Get("X-Refresh-Token")
+
+	if token != "" {
+		return token
+	}
+
+	cookie, err := ctx.Cookie("refresh_token")
+	if err == nil {
+		return cookie.Value
+	}
+
+	return ""
 }
