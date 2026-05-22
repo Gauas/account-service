@@ -14,7 +14,7 @@ func (ctrl *Controller) Register(c echo.Context) error {
 		return response.NewError(http.StatusBadRequest, "invalid request body")
 	}
 
-	err := ctrl.service.Register(c.Request().Context(), req)
+	err := ctrl.service.Registry(c.Request().Context(), req)
 	if err != nil {
 		return response.Wrap(err)
 	}
