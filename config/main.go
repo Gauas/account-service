@@ -6,10 +6,9 @@ import (
 )
 
 type Config struct {
-	Port       string
-	DBUrl      string
-	SecretKey  string
-	PrivateKey string
+	Port      string
+	DBUrl     string
+	SecretKey string
 
 	MemoryURL string
 	QueueURL  string
@@ -23,9 +22,8 @@ type Config struct {
 
 func New() Config {
 	cfg := Config{
-		Port:       getEnv("PORT", "8080"),
-		SecretKey:  os.Getenv("SECRET_KEY"),
-		PrivateKey: os.Getenv("PRIVATE_KEY"),
+		Port:      getEnv("PORT", "8080"),
+		SecretKey: os.Getenv("SECRET_KEY"),
 
 		DBUrl:     getEnv("DB_URL", "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Ho_Chi_Minh"),
 		MemoryURL: getEnv("MEMORY_URL", "redis://localhost:6379/0"),
@@ -51,9 +49,6 @@ func validate(cfg Config) {
 	}
 	if cfg.SecretKey == "" {
 		log.Fatal("config: SECRET_KEY is required")
-	}
-	if cfg.PrivateKey == "" {
-		log.Fatal("config: PRIVATE_KEY is required")
 	}
 }
 

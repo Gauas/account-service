@@ -19,7 +19,7 @@ func main() {
 
 	repositoryInstance := repository.New(infraInstance.DB)
 
-	serviceInstance := service.New(repositoryInstance, Config, infraInstance.Queue, infraInstance.Memory)
+	serviceInstance := service.New(repositoryInstance, Config, infraInstance)
 
 	controllerInstance := controller.New(serviceInstance, Config.CookieDomain)
 
