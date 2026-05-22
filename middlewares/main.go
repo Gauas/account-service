@@ -1,19 +1,19 @@
 package middlewares
 
 import (
+	"github.com/gauas/account-service/config"
+	"github.com/gauas/account-service/infra"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
-	"github.com/gauas/account-service/config"
-	"github.com/gauas/account-service/service"
 )
 
 type Middleware struct {
-	config  config.Config
-	service *service.Service
+	Config config.Config
+	Infra  infra.Infra
 }
 
-func New(cfg config.Config, svc *service.Service) *Middleware {
-	return &Middleware{config: cfg, service: svc}
+func New(cfg config.Config) *Middleware {
+	return &Middleware{Config: cfg}
 }
 
 func (m *Middleware) RegisterGlobal(server *echo.Echo) {
