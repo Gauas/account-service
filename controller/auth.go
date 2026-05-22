@@ -4,42 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/gauas/account-service/service"
 	"github.com/gauas/account-service/packages/response"
+	"github.com/labstack/echo/v4"
 )
-
-type registerRequest struct {
-	Username    *string   `json:"username"`
-	Password    string    `json:"password"`
-	Email       *string   `json:"email"`
-	Phone       *string   `json:"phone"`
-	FullName    string    `json:"fullname"`
-	Gender      string    `json:"gender"`
-	DateOfBirth time.Time `json:"date_of_birth"`
-}
-
-func (ctrl *Controller) Register(c echo.Context) error {
-	var req registerRequest
-	if err := c.Bind(&req); err != nil {
-		return response.NewError(http.StatusBadRequest, "invalid request body")
-	}
-
-	user, err := ctrl.service.Register(c.Request().Context(), service.RegisterRequest{
-		Username:    req.Username,
-		Password:    req.Password,
-		Email:       req.Email,
-		Phone:       req.Phone,
-		FullName:    req.FullName,
-		Gender:      req.Gender,
-		DateOfBirth: req.DateOfBirth,
-	})
-	if err != nil {
-		return response.Wrap(err)
-	}
-
-	return response.Created(c, echo.Map{"message": "registration successful", "user_id": user.UserID})
-}
 
 type loginRequest struct {
 	Username *string `json:"username"`

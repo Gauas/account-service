@@ -39,7 +39,7 @@ func (r Repository[T]) GetAll(ctx context.Context, args ...interface{}) ([]T, er
 }
 
 func (r Repository[T]) Create(ctx context.Context, entity *T) (*T, error) {
-	if err := r.db.WithContext(ctx).Create(entity).Error; err != nil {
+	if err := r.Resolve(ctx).Create(entity).Error; err != nil {
 		return nil, err
 	}
 
@@ -47,7 +47,7 @@ func (r Repository[T]) Create(ctx context.Context, entity *T) (*T, error) {
 }
 
 func (r Repository[T]) Update(ctx context.Context, entity *T) (*T, error) {
-	if err := r.db.WithContext(ctx).Save(entity).Error; err != nil {
+	if err := r.Resolve(ctx).Save(entity).Error; err != nil {
 		return nil, err
 	}
 
@@ -62,7 +62,7 @@ func (r Repository[T]) UpdateWhere(ctx context.Context, values interface{}, args
 }
 
 func (r Repository[T]) Delete(ctx context.Context, args ...interface{}) error {
-	tx := r.db.WithContext(ctx)
+	tx := r.Resolve(ctx)
 	tx = applyArgs(tx, args...)
 
 	return tx.Delete(new(T)).Error
@@ -88,6 +88,6 @@ func (r Repository[T]) Exists(ctx context.Context, args ...interface{}) (bool, e
 	return count > 0, nil
 }
 
-func (r Repository[T]) DB() *gorm.DB {
-	return r.db
+func (r Repository[T]) WithContext(ctx context.Context) *gorm.DB {
+	return r.db.WithContext(ctx)
 }

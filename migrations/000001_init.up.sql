@@ -8,11 +8,11 @@ CREATE TABLE IF NOT EXISTS users (
     email           VARCHAR(255) UNIQUE,
     phone           VARCHAR(15),
     full_name       VARCHAR(255),
-    gender          VARCHAR(50),
+    gender          VARCHAR(50), ENUM('male', 'female', 'other'),
     date_of_birth   TIMESTAMP,
     facebook_url    VARCHAR(500) UNIQUE,
     github_url      VARCHAR(500) UNIQUE,
-    avatar_url      VARCHAR(500),
+    avatar_url      VARCHAR(500), DEFAULT 'https://cdn.gauas.com/images/avatar/default_image.jpg',
     deleted_at      TIMESTAMP,
     created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
