@@ -15,7 +15,7 @@ func (ctrl *Controller) Login(c echo.Context) error {
 		return response.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	data, err := ctrl.service.Login(c.Request().Context(), req)
+	data, err := ctrl.service.Login(c, req)
 	if err != nil {
 		return response.Wrap(err)
 	}

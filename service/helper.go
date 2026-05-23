@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gauas/account-service/packages/response"
+	"github.com/labstack/echo/v4"
 )
 
 func appError(code int, msg string) error {
@@ -22,6 +23,19 @@ func hashPassword(password string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
+func (s *Service) SetCookie(c echo.Context, name string, value string, ttl time.Duration) {
+	http.SetCookie(c.Response().Writer, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Path:     "/",
+		Domain:   s.Config.Cookie.DomainName,
+		Secure:   s.Config.Cookie.Secure,
+		HttpOnly: s.Config.Cookie.HttpOnly,
+		SameSite: s.Config.Cookie.SameSite,
+		MaxAge:   int(ttl.Seconds()),
+		Expires:  time.Now().Add(ttl),
+	})
+}
 
 func avatarHash(username string) string {
 	h := sha256.New()

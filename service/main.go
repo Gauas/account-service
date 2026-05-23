@@ -8,11 +8,11 @@ import (
 
 type Service struct {
 	Repository *repository.Registry
-	Config     config.Config
+	Config     *config.Config
 	Infra      *infra.Infra
 }
 
-func New(repo *repository.Registry, cfg config.Config, infra *infra.Infra) *Service {
+func New(repo *repository.Registry, cfg *config.Config, infra *infra.Infra) *Service {
 	return &Service{
 		Repository: repo,
 		Config:     cfg,

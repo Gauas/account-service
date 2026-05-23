@@ -14,6 +14,7 @@ github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cu
 github.com/gauas/authorization-service v1.0.1 h1:toD4qR/lrcvqEJ17TEbeniITJQJ7uACskMFIHxxJE6k=
 github.com/gauas/authorization-service v1.0.1/go.mod h1:d7SGsCOhysj1Xy9h8N2tS019lJvIJWrQhuDw0YzaHgA=
 github.com/gauas/authorization-service v1.0.2/go.mod h1:d7SGsCOhysj1Xy9h8N2tS019lJvIJWrQhuDw0YzaHgA=
+github.com/gauas/authorization-service v1.0.3/go.mod h1:d7SGsCOhysj1Xy9h8N2tS019lJvIJWrQhuDw0YzaHgA=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=

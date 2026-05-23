@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/middlewares"
 	"github.com/labstack/echo/v4"
@@ -17,14 +19,17 @@ func (s *Service) Login(c echo.Context, req dto.LoginRequest) (echo.Map, error) 
 		return nil, echo.NewHTTPError(401, "invalid credentials")
 	}
 
-	tokenPair, err := s.Infra.AuthSDK.CreateToken(ctx, user.UserID, user.Permission, middlewares.DeviceID(ctx))
+	tokens, err := s.Infra.AuthSDK.CreateToken(ctx, user.UserID, user.Permission, middlewares.DeviceID(ctx))
 	if err != nil {
 		return nil, err
 	}
 
+	s.SetCookie(c, "access_token", tokens.AccessToken, time.Until(tokens.ExpiresAt))
+	s.SetCookie(c, "refresh_token", tokens.RefreshToken, time.Until(tokens.RefreshExpiresAt))
+
 	return echo.Map{
-		"access_token":  tokenPair.AccessToken,
-		"refresh_token": tokenPair.RefreshToken,
-		"expires_in":    tokenPair.ExpiresIn,
+		"access_token":  tokens.AccessToken,
+		"refresh_token": tokens.RefreshToken,
+		"expires_in":    tokens.ExpiresIn,
 	}, nil
 }

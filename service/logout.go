@@ -14,5 +14,8 @@ func (s *Service) Logout(c echo.Context) error {
 		return fmt.Errorf("no refresh token provided")
 	}
 
+	s.SetCookie(c, "access_token", "", 0)
+	s.SetCookie(c, "refresh_token", "", 0)
+
 	return s.Infra.AuthSDK.RevokeToken(ctx, refreshToken, middlewares.DeviceID(ctx))
 }
