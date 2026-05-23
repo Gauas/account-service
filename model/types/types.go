@@ -1,4 +1,4 @@
-package model
+package types
 
 import (
 	"errors"
@@ -10,7 +10,11 @@ import (
 type Email string
 
 func (e Email) Validate() error {
-	if !supports.IsEmail(string(e)) && e != "" {
+	if e == "" {
+		return nil
+	}
+
+	if !supports.IsEmail(string(e)) {
 		return errors.New("invalid email")
 	}
 
@@ -52,3 +56,11 @@ func (v VerificationMethod) Validate() error {
 
 	return errors.New("invalid verification method")
 }
+
+type IdentityProvider string
+
+const (
+	EmailIdentityProvider    IdentityProvider = "email"
+	GoogleIdentityProvider   IdentityProvider = "google"
+	FacebookIdentityProvider IdentityProvider = "facebook"
+)

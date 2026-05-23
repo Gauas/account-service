@@ -2,47 +2,90 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/model"
+	"github.com/gauas/account-service/model/types"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
-func (s *Service) Registry(ctx context.Context, req dto.RegisterRequest) error {
-	return s.Repository.Transaction(ctx,
-		func(ctx context.Context) error {
-			hashed := hashPassword(req.Password)
+func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map, error) {
+	err := error(nil)
+	ctx := c.Request().Context()
 
-			user := &model.User{
-				UserID:      uuid.New(),
-				Permission:  "member",
-				Password:    &hashed,
-				Email:       req.Email,
-				FullName:    &req.FullName,
-				Gender:      &req.Gender,
-				DateOfBirth: &req.DateOfBirth,
-			}
+	if err = req.Email.Validate(); err != nil {
+		return nil, err
+	}
 
-			if _, err := s.Repository.User.Create(ctx, user); err != nil {
-				return err
-			}
+	user := &model.User{
+		Permission: "member",
+		FullName:   &req.FullName,
+	}
 
-			if err := req.Email.Validate(); err != nil {
-				return err
-			}
+	if user.ID, err = uuid.NewV7(); err != nil {
+		return nil, err
+	}
 
-			emailVerification := &model.Verification{
-				ID:     uuid.New(),
-				UserID: user.UserID,
-				Method: model.EmailVerification,
-				Value:  string(*user.Email),
-			}
+	if req.Email == "" {
+		return nil, fmt.Errorf("email is required")
+	}
 
-			if _, err := s.Repository.Verification.Create(ctx, emailVerification); err != nil {
-				return err
-			}
+	identity := &model.Identity{
+		UserID:         user.ID,
+		Provider:       types.EmailIdentityProvider,
+		ProviderUserID: strings.ToLower(strings.TrimSpace(string(req.Email))),
+		Email:          &req.Email,
+	}
 
-			return nil
-		},
-	)
+	if identity.ID, err = uuid.NewV7(); err != nil {
+		return nil, err
+	}
+
+	verification := &model.Verification{
+		UserID: user.ID,
+		Method: types.EmailVerification,
+		Value:  string(req.Email),
+	}
+
+	if verification.ID, err = uuid.NewV7(); err != nil {
+		return nil, err
+	}
+
+	if req.Password == "" {
+		return nil, fmt.Errorf("password is required")
+	}
+
+	hashed, err := hashPassword(req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	identity.Hash = &hashed
+
+	err = s.Repository.Transaction(ctx, func(ctx context.Context) error {
+		if s.Repository.Identity.Exists(ctx, "email = ?", string(req.Email)) {
+			return fmt.Errorf("account already exists")
+		}
+
+		if _, err = s.Repository.User.Create(ctx, user); err != nil {
+			return err
+		}
+
+		if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
+			return err
+		}
+
+		if _, err = s.Repository.Verification.Create(ctx, verification); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return s.TryAuthorize(c, user)
 }

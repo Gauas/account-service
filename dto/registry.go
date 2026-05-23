@@ -3,13 +3,13 @@ package dto
 import (
 	"time"
 
-	"github.com/gauas/account-service/model"
+	"github.com/gauas/account-service/model/types"
 )
 
 type RegisterRequest struct {
-	Email       *model.Email `json:"email"`
+	Email       types.Email  `json:"email"`
 	Password    string       `json:"password"`
 	FullName    string       `json:"fullname"`
-	Gender      model.Gender `json:"gender"`
+	Gender      types.Gender `json:"gender"`
 	DateOfBirth time.Time    `json:"date_of_birth"`
 }
