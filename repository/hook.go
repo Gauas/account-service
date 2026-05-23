@@ -16,10 +16,6 @@ func (r *Repository[T]) Take(ctx context.Context, args ...interface{}) (*T, erro
 
 	err := r.Resolve(ctx).Take(record, args...).Error
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
-
 	return record, err
 }
 
@@ -70,20 +66,15 @@ func (r *Repository[T]) Pluck(ctx context.Context, column string, dest any) erro
 	return r.Resolve(ctx).Model(new(T)).Pluck(column, dest).Error
 }
 
-func (r *Repository[T]) Exists(ctx context.Context, args ...interface{}) (bool, error) {
+func (r *Repository[T]) Exists(ctx context.Context, args ...interface{}) bool {
 	record := new(T)
 
 	err := r.Resolve(ctx).Select("1").Take(record, args...).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-
 	if err != nil {
-		return false, err
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
 func (r Repository[T]) WithContext(ctx context.Context) *gorm.DB {
