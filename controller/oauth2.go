@@ -8,14 +8,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (ctrl *Controller) LoginWithGoogle(c echo.Context) error {
+func (ctrl *Controller) LoginWithOAuth2(c echo.Context) error {
 	var req dto.Oauth2Request
 
 	if err := c.Bind(&req); err != nil {
-		return response.NewError(http.StatusBadRequest, "invalid request")
+		return response.NewError(
+			http.StatusBadRequest,
+			"invalid request",
+		)
 	}
 
-	data, err := ctrl.service.TryWithGoogle(c, req)
+	data, err := ctrl.service.TryOAuth2(c, req)
 	if err != nil {
 		return response.Wrap(err)
 	}

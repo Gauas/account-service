@@ -1,5 +1,6 @@
 package dto
 
 type Oauth2Request struct {
-	Token string `json:"token"`
+	Provider string `json:"provider"`
+	Token    string `json:"token"`
 }

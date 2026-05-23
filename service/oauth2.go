@@ -2,27 +2,30 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
-func (s *Service) TryWithGoogle(c echo.Context, req dto.Oauth2Request) (echo.Map, error) {
-	ctx := c.Request().Context()
-	err := error(nil)
+func (s *Service) TryOAuth2(c echo.Context, req dto.Oauth2Request) (echo.Map, error) {
 
-	data, err := oauth2.TryGoogle(req.Token)
+	ctx := c.Request().Context()
+
+	provider, ok := oauth2.Providers[req.Provider]
+	if !ok {
+		return nil, echo.NewHTTPError(400, "unsupported oauth2 provider")
+	}
+
+	data, err := provider.GetUser(req.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND provider_user_id = ?", "google", data.Sub)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND provider_user_id = ?", data.Provider, data.ProviderUserID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -31,21 +34,25 @@ func (s *Service) TryWithGoogle(c echo.Context, req dto.Oauth2Request) (echo.Map
 	}
 
 	user, err := s.Repository.User.Take(ctx, "id = ?", identity.UserID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, err
+	}
+
+	if user == nil {
+		return nil, echo.NewHTTPError(404, "user not found")
 	}
 
 	return s.TryAuthorize(c, user)
 }
 
-func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.GoogleUserInfo) (echo.Map, error) {
+func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.Map, error) {
 	err := error(nil)
 	ctx := c.Request().Context()
 
 	user := &model.User{
 		Permission: "member",
 		FullName:   &data.Name,
-		AvatarURL:  &data.Picture,
+		AvatarURL:  &data.AvatarURL,
 	}
 
 	if user.ID, err = uuid.NewV7(); err != nil {
@@ -54,27 +61,28 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.GoogleUserInfo) (
 
 	identity := &model.Identity{
 		UserID:         user.ID,
-		Provider:       "google",
-		ProviderUserID: data.Sub,
-		Email:          &data.Email,
+		Provider:       data.Provider,
+		ProviderUserID: data.ProviderUserID,
+		Email:          data.Email,
 	}
 
 	if identity.ID, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
-	err = s.Repository.Transaction(ctx, func(ctx context.Context) error {
-		if _, err := s.Repository.User.Create(ctx, user); err != nil {
-			return err
-		}
+	err = s.Repository.Transaction(ctx,
+		func(ctx context.Context) error {
+			if _, err = s.Repository.User.Create(ctx, user); err != nil {
+				return err
+			}
 
-		if _, err := s.Repository.Identity.Create(ctx, identity); err != nil {
-			return err
-		}
+			if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
+				return err
+			}
 
-		return nil
-	})
-
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
