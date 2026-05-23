@@ -8,12 +8,12 @@ import (
 )
 
 type Middleware struct {
-	Config config.Config
-	Infra  infra.Infra
+	Config *config.Config
+	Infra  *infra.Infra
 }
 
-func New(cfg config.Config) *Middleware {
-	return &Middleware{Config: cfg}
+func New(cfg *config.Config, infra *infra.Infra) *Middleware {
+	return &Middleware{Config: cfg, Infra: infra}
 }
 
 func (m *Middleware) RegisterGlobal(server *echo.Echo) {

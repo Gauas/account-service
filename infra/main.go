@@ -15,7 +15,7 @@ type Infra struct {
 	AuthSDK *sdk.Client
 }
 
-func New(cfg config.Config) *Infra {
+func New(cfg *config.Config) *Infra {
 	return &Infra{
 		DB:     connectDatabase(cfg.DBUrl),
 		Memory: connectMemory(cfg),

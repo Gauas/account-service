@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gauas/account-service/model"
 	"github.com/google/uuid"
 	"github.com/pquerna/otp/totp"
-	"github.com/gauas/account-service/model"
-	"github.com/gauas/account-service/supports"
 )
 
 type TOTPSetup struct {
@@ -115,21 +114,21 @@ func (s *Service) VerifyTOTP(ctx context.Context, userID uuid.UUID, otpCode, dev
 	return s.CreateToken(ctx, user.UserID, user.Permission, deviceID)
 }
 
-func (s *Service) Login(ctx context.Context, identifierType, identifier, password, deviceID string) (string, string, time.Time, error) {
-	user, err := s.AuthenticateUser(ctx, identifierType, identifier, password)
-	if err != nil {
-		return "", "", time.Time{}, err
-	}
+//func (s *Service) Login(ctx context.Context, identifierType, identifier, password, deviceID string) (string, string, time.Time, error) {
+//	user, err := s.AuthenticateUser(ctx, identifierType, identifier, password)
+//	if err != nil {
+//		return "", "", time.Time{}, err
+//	}
+//
+//	return s.CreateToken(ctx, user.UserID, user.Permission, deviceID)
+//}
 
-	return s.CreateToken(ctx, user.UserID, user.Permission, deviceID)
-}
-
-func resolveAccountName(user *model.User, userID uuid.UUID) string {
-	if name := supports.Val(user.Email); name != "" {
-		return name
-	}
-	if name := supports.Val(user.Username); name != "" {
-		return name
-	}
-	return userID.String()
-}
+//func resolveAccountName(user *model.User, userID uuid.UUID) string {
+//	if name := supports.Val(user.Email); name != "" {
+//		return name
+//	}
+//	if name := supports.Val(user.Username); name != "" {
+//		return name
+//	}
+//	return userID.String()
+//}

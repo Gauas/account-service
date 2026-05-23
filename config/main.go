@@ -1,10 +1,16 @@
 package config
 
 import (
-	"log"
+	"net/http"
 	"os"
 )
 
+type Cookie struct {
+	HttpOnly   bool
+	Secure     bool
+	SameSite   http.SameSite
+	DomainName string
+}
 type Config struct {
 	Port      string
 	DBUrl     string
@@ -16,45 +22,29 @@ type Config struct {
 	AuthorizationURL string
 	UploadURL        string
 
-	CookieDomain string
-	DomainName   string
+	Cookie Cookie
 }
 
-func New() Config {
-	cfg := Config{
-		Port:      getEnv("PORT", "8080"),
+func New() *Config {
+	cfg := &Config{
+		Port:      get("PORT", "8080"),
+		DBUrl:     get("DB_URL", "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"),
 		SecretKey: os.Getenv("SECRET_KEY"),
 
-		DBUrl:     getEnv("DB_URL", "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Ho_Chi_Minh"),
-		MemoryURL: getEnv("MEMORY_URL", "redis://localhost:6379/0"),
-		QueueURL:  getEnv("QUEUE_URL", "amqp://guest:guest@localhost:5672/"),
+		MemoryURL: get("MEMORY_URL", "redis://localhost:6379/0"),
+		QueueURL:  get("QUEUE_URL", "amqp://guest:guest@localhost:5672/"),
 
-		AuthorizationURL: getEnv("AUTHORIZATION_URL", "http://localhost:8082"),
-		UploadURL:        getEnv("UPLOAD_URL", "http://localhost:8081"),
+		AuthorizationURL: get("AUTHORIZATION_URL", "http://localhost:8082"),
+		UploadURL:        get("UPLOAD_URL", "http://localhost:8081"),
 
-		CookieDomain: os.Getenv("GLOBAL_DOMAIN"),
-		DomainName:   getEnv("DOMAIN_NAME", "gauas.online"),
+		Cookie: Cookie{
+			HttpOnly:   get("HTTP_ONLY", "false") == "true",
+			Secure:     get("HTTP_SECURE", "false") == "true",
+			SameSite:   parseSameSite(getEnvInt("SAME_SITE", 0)),
+			DomainName: get("DOMAIN_NAME", ""),
+		},
 	}
 
 	validate(cfg)
 	return cfg
-}
-
-func validate(cfg Config) {
-	if cfg.Port == "" {
-		log.Fatal("config: PORT is required")
-	}
-	if cfg.DBUrl == "" {
-		log.Fatal("config: DB_URL is required")
-	}
-	if cfg.SecretKey == "" {
-		log.Fatal("config: SECRET_KEY is required")
-	}
-}
-
-func getEnv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
 }

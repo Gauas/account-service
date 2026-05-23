@@ -21,9 +21,9 @@ func main() {
 
 	serviceInstance := service.New(repositoryInstance, Config, infraInstance)
 
-	controllerInstance := controller.New(serviceInstance, Config.CookieDomain)
+	controllerInstance := controller.New(serviceInstance, Config)
 
-	middlewareInstance := middlewares.New(Config, serviceInstance)
+	middlewareInstance := middlewares.New(Config, infraInstance)
 
 	kernel.New(controllerInstance, middlewareInstance, Config).Start()
 

@@ -9,8 +9,8 @@ import (
 	"github.com/gauas/account-service/config"
 	"github.com/gauas/account-service/controller"
 	"github.com/gauas/account-service/middlewares"
-	"github.com/gauas/account-service/route"
 	"github.com/gauas/account-service/packages/response"
+	"github.com/gauas/account-service/route"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,8 +20,8 @@ type Kernel struct {
 	config     config.Config
 }
 
-func New(ctrl *controller.Controller, mw *middlewares.Middleware, cfg config.Config) *Kernel {
-	return &Kernel{controller: ctrl, middleware: mw, config: cfg}
+func New(ctrl *controller.Controller, mw *middlewares.Middleware, cfg *config.Config) *Kernel {
+	return &Kernel{controller: ctrl, middleware: mw, config: *cfg}
 }
 
 func (k *Kernel) Start() {
