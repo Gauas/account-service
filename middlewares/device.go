@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (m *Middleware) DeviceRequired() echo.MiddlewareFunc {
+func (m *Middleware) Device() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			deviceID := c.Request().Header.Get("X-Device-ID")

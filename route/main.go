@@ -19,24 +19,22 @@ func New(server *echo.Echo, ctrl *controller.Controller, mw *middleware.Middlewa
 }
 
 func (r *Router) RegisterRoutes() {
-	api := r.Server.Group("/v1/account")
+	api := r.Server.Group("/v1/account", r.Middleware.Device())
 
-	api.GET("/health", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
-	})
-
-	api.POST("/register", r.Controller.Authentication.Register)
-	api.POST("/login", r.Controller.Authentication.Login)
-
-	//api.GET("/verify-email/:token", r.controller.VerifyEmail)
-	//api.POST("/send-verification/:user_id", r.controller.SendVerificationEmail)
-
-	//sso := api.Group("/oauth2")
-	//sso.POST("/google", r.controller.)
-
-	authed := api.Group("", r.Middleware.Auth())
+	public := api.Group("")
 	{
-		authed.POST("/logout", r.Controller.Authentication.Logout)
+		public.GET("/health", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
+		})
+
+		public.POST("/register", r.Controller.Authentication.Register)
+		public.POST("/login", r.Controller.Authentication.Login)
+		public.POST("/oathh2", r.Controller.Authentication.OAuth2)
+	}
+
+	private := api.Group("", r.Middleware.Auth())
+	{
+		private.POST("/logout", r.Controller.Authentication.Logout)
 	}
 
 	//profile := api.Group("/profile")
@@ -50,4 +48,9 @@ func (r *Router) RegisterRoutes() {
 	//mfa.GET("/totp/qr", r.controller.GenerateTOTPQR)
 	//mfa.POST("/totp/enable", r.controller.EnableTOTP)
 	//mfa.POST("/totp/verify", r.controller.VerifyTOTP)
+	//api.GET("/verify-email/:token", r.controller.VerifyEmail)
+	//api.POST("/send-verification/:user_id", r.controller.SendVerificationEmail)
+
+	//sso := api.Group("/oauth2")
+	//sso.POST("/google", r.controller.)
 }

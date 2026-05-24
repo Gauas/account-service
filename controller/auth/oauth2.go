@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) LoginWithOAuth2(c echo.Context) error {
+func (h *Handler) OAuth2(c echo.Context) error {
 	var req dto.Oauth2Request
 
 	if err := c.Bind(&req); err != nil {
