@@ -14,6 +14,22 @@ func get(key, def string) string {
 	return def
 }
 
+func mustEnv(key string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	log.Fatalf("config: %s is required", key)
+	return ""
+}
+
+func mustInt(v string) int {
+	i, err := strconv.Atoi(v)
+	if err != nil {
+		log.Fatalf("config: invalid int %q", v)
+	}
+	return i
+}
+
 func validate(cfg *Config) {
 	if cfg.Port == "" {
 		log.Fatal("config: PORT is required")

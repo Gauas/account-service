@@ -46,7 +46,7 @@ func (k *Kernel) Start() {
 
 	k.middleware.RegisterGlobal(server)
 
-	route.New(server, k.controller, k.middleware).RegisterRoutes()
+	route.New(server, k.controller, k.middleware).RegisterRoutes() // <----
 
 	addr := fmt.Sprintf(":%s", k.config.Port)
 	log.Printf("account-service listening on %s", addr)

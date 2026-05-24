@@ -1,4 +1,4 @@
-package controller
+package auth
 
 import (
 	"net/http"
@@ -8,14 +8,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (ctrl *Controller) Login(c echo.Context) error {
-	var req dto.LoginRequest
-
+func (h *Handler) Register(c echo.Context) error {
+	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {
-		return response.NewError(http.StatusBadRequest, "invalid request")
+		return response.NewError(http.StatusBadRequest, "invalid request body")
 	}
 
-	data, err := ctrl.service.Login(c, req)
+	data, err := h.Service.NewAccount(c, req)
 	if err != nil {
 		return response.Wrap(err)
 	}

@@ -1,4 +1,4 @@
-package controller
+package auth
 
 import (
 	"net/http"
@@ -8,17 +8,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (ctrl *Controller) LoginWithOAuth2(c echo.Context) error {
-	var req dto.Oauth2Request
+func (h *Handler) Login(c echo.Context) error {
+	var req dto.LoginRequest
 
 	if err := c.Bind(&req); err != nil {
-		return response.NewError(
-			http.StatusBadRequest,
-			"invalid request",
-		)
+		return response.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	data, err := ctrl.service.TryOAuth2(c, req)
+	data, err := h.Service.Login(c, req)
 	if err != nil {
 		return response.Wrap(err)
 	}

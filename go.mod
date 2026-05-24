@@ -12,6 +12,8 @@ require (
 	github.com/redis/go-redis/v9 v9.16.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.12
+	github.com/gauas/config-service v1.0.5
+	github.com/joho/godotenv v1.5.1
 )
 
 require (
