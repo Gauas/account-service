@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     username        VARCHAR(255) UNIQUE,
     full_name       VARCHAR(255),
     avatar_url      VARCHAR(500) DEFAULT 'https://cdn.gauas.com/images/avatar/default_image.jpg',
-    date_of_birth   DATE,
+    dob             DATE,
     gender          VARCHAR(20) CHECK (gender IN ('male', 'female', 'other')),
     deleted_at      TIMESTAMP,
     created_at      TIMESTAMP NOT NULL DEFAULT NOW(),

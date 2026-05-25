@@ -39,12 +39,12 @@ func (r *Repository[T]) Create(ctx context.Context, entity *T) (*T, error) {
 	return entity, nil
 }
 
-func (r *Repository[T]) Update(ctx context.Context, entity *T) (*T, error) {
+func (r *Repository[T]) Update(ctx context.Context, entity *T) error {
 	if err := r.Resolve(ctx).Updates(entity).Error; err != nil {
-		return nil, err
+		return err
 	}
 
-	return entity, nil
+	return nil
 }
 
 //func (r Repository[T]) UpdateWhere(ctx context.Context, values interface{}, args ...interface{}) error {

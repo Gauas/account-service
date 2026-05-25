@@ -34,12 +34,13 @@ func (r *Router) RegisterRoutes() {
 
 	private := api.Group("", r.Middleware.Auth())
 	{
+		private.GET("", r.Controller.GetProfile)
+
 		private.POST("/logout", r.Controller.Authentication.Logout)
 	}
 
 	//profile := api.Group("/profile")
 	//profile.Use(auth)
-	//profile.GET("", r.controller.GetProfile)
 	//profile.PUT("", r.controller.UpdateProfile)
 	//profile.PATCH("/avatar", r.controller.UpdateAvatar)
 	//
