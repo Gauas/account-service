@@ -1,0 +1,66 @@
+package types
+
+import (
+	"errors"
+	"slices"
+
+	"github.com/gauas/account-service/supports"
+)
+
+type Email string
+
+func (e Email) Validate() error {
+	if e == "" {
+		return nil
+	}
+
+	if !supports.IsEmail(string(e)) {
+		return errors.New("invalid email")
+	}
+
+	return nil
+}
+
+type Phone string
+
+func (p Phone) Validate() error {
+	if !supports.IsPhone(string(p)) && p != "" {
+		return errors.New("invalid phone")
+	}
+
+	return nil
+}
+
+type Gender string
+
+func (g Gender) Validate() error {
+	if !slices.Contains([]string{"male", "female", "other"}, string(g)) {
+		return errors.New("invalid gender")
+	}
+
+	return nil
+}
+
+type VerificationMethod string
+
+const (
+	EmailVerification VerificationMethod = "email"
+	PhoneVerification VerificationMethod = "phone"
+)
+
+func (v VerificationMethod) Validate() error {
+	switch v {
+	case EmailVerification, PhoneVerification:
+		return nil
+	}
+
+	return errors.New("invalid verification method")
+}
+
+type IdentityProvider string
+
+const (
+	EmailIdentityProvider    IdentityProvider = "email"
+	GoogleIdentityProvider   IdentityProvider = "google"
+	FacebookIdentityProvider IdentityProvider = "facebook"
+)

@@ -1,3 +1,4 @@
 DROP TABLE IF EXISTS mfas;
 DROP TABLE IF EXISTS verifications;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS identities;
