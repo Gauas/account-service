@@ -19,14 +19,17 @@ func New(server *echo.Echo, ctrl *controller.Controller, mw *middleware.Middlewa
 }
 
 func (r *Router) RegisterRoutes() {
+	health := r.Server.Group("/v1/account")
+	{
+		health.GET("/health", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
+		})
+	}
+
 	api := r.Server.Group("/v1/account", r.Middleware.Device())
 
 	public := api.Group("")
 	{
-		public.GET("/health", func(c echo.Context) error {
-			return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
-		})
-
 		public.POST("/register", r.Controller.Authentication.Register)
 		public.POST("/login", r.Controller.Authentication.Login)
 		public.POST("/oathh2", r.Controller.Authentication.OAuth2)
@@ -34,12 +37,14 @@ func (r *Router) RegisterRoutes() {
 
 	private := api.Group("", r.Middleware.Auth())
 	{
-		private.GET("", r.Controller.GetProfile)
-
 		private.POST("/logout", r.Controller.Authentication.Logout)
 	}
 
-	//profile := api.Group("/profile")
+	profile := api.Group("/profile")
+	{
+		private.GET("", r.Controller.Profile.GetUserInfo)
+		profile.PUT("", r.Controller.Profile.UpdateProfile)
+	}
 	//profile.Use(auth)
 	//profile.PUT("", r.controller.UpdateProfile)
 	//profile.PATCH("/avatar", r.controller.UpdateAvatar)
