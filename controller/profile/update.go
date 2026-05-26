@@ -1,4 +1,4 @@
-package info
+package profile
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) Update(c echo.Context) error {
+func (h *Handler) UpdateProfile(c echo.Context) error {
 	var req dto.UpdateProfileRequest
 
 	if err := c.Bind(&req); err != nil {
