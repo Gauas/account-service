@@ -16,18 +16,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate version
-        id: version
-        run: echo "VERSION=0.0.$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Login to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-      - name: Build and push Docker image
+#      - name: Generate version
+#        id: version
+#        run: echo "VERSION=0.0.$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
+#
+#      - name: Login to DockerHub
+#        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+#
+#      - name: Build and push Docker image
+#        run: |
+#          docker build \
+#            -t gauaslab/account-service:latest \
+#            -t gauaslab/account-service:${{ steps.version.outputs.VERSION }} \
+#            .
+#          docker push gauaslab/account-service:latest
+#          docker push gauaslab/account-service:${{ steps.version.outputs.VERSION }}
+      - name: Debug actor
         run: |
-          docker build \
-            -t gauaslab/account-service:latest \
-            -t gauaslab/account-service:${{ steps.version.outputs.VERSION }} \
-            .
-          docker push gauaslab/account-service:latest
-          docker push gauaslab/account-service:${{ steps.version.outputs.VERSION }}
+          echo "actor=${{ github.actor }}"
+          echo "repo=${{ github.repository }}"
+          echo "event=${{ github.event_name }}"
