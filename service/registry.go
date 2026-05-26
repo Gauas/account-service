@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gauas/account-service/dto"
@@ -17,7 +17,7 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 	ctx := c.Request().Context()
 
 	if err = req.Email.Validate(); err != nil {
-		return nil, err
+		return nil, appError(http.StatusBadRequest, err.Error())
 	}
 
 	user := &model.User{
@@ -30,7 +30,7 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 	}
 
 	if req.Email == "" {
-		return nil, fmt.Errorf("email is required")
+		return nil, appError(http.StatusBadRequest, "email is required")
 	}
 
 	identity := &model.Identity{
@@ -55,7 +55,7 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 	}
 
 	if req.Password == "" {
-		return nil, fmt.Errorf("password is required")
+		return nil, appError(http.StatusBadRequest, "password is required")
 	}
 
 	hashed, err := hashPassword(req.Password)
@@ -67,7 +67,7 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 
 	err = s.Repository.Transaction(ctx, func(ctx context.Context) error {
 		if s.Repository.Identity.Exists(ctx, "email = ?", string(req.Email)) {
-			return fmt.Errorf("account already exists")
+			return appError(http.StatusConflict, "account already exists")
 		}
 
 		if _, err = s.Repository.User.Create(ctx, user); err != nil {

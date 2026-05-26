@@ -32,7 +32,7 @@ func (r *Router) RegisterRoutes() {
 	{
 		public.POST("/register", r.Controller.Authentication.Register)
 		public.POST("/login", r.Controller.Authentication.Login)
-		public.POST("/oathh2", r.Controller.Authentication.OAuth2)
+		public.POST("/oauth2", r.Controller.Authentication.OAuth2)
 	}
 
 	private := api.Group("", r.Middleware.Auth())
@@ -40,9 +40,9 @@ func (r *Router) RegisterRoutes() {
 		private.POST("/logout", r.Controller.Authentication.Logout)
 	}
 
-	profile := api.Group("/profile")
+	profile := private.Group("/profile")
 	{
-		private.GET("", r.Controller.Profile.GetUserInfo)
+		profile.GET("", r.Controller.Profile.GetUserInfo)
 		profile.PUT("", r.Controller.Profile.UpdateProfile)
 	}
 	//profile.Use(auth)

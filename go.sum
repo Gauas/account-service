@@ -9,8 +9,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
-github.com/gauas/authorization-service v1.0.3 h1:Ppvaydg2w+Z2bL9HkxCJ2ONn7PcfAWJJZY5qCz/b4js=
-github.com/gauas/authorization-service v1.0.3/go.mod h1:d7SGsCOhysj1Xy9h8N2tS019lJvIJWrQhuDw0YzaHgA=
+github.com/gauas/authorization-service v1.0.4 h1:DVNuCHcBviDhYR1fHJalm10gN44HuvS7J7l66ilea2I=
+github.com/gauas/authorization-service v1.0.4/go.mod h1:d7SGsCOhysj1Xy9h8N2tS019lJvIJWrQhuDw0YzaHgA=
 github.com/gauas/config-service v1.0.5 h1:a5l5aT3ctlrGWWN353rRn2povQ2PwaQdfDaJJ2xHZcY=
 github.com/gauas/config-service v1.0.5/go.mod h1:lvU/8nMMblG9T0gJDnWaWcKmfctQHMX6NYOVMmsHL8s=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=

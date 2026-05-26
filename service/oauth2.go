@@ -2,16 +2,17 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 func (s *Service) TryOAuth2(c echo.Context, req dto.Oauth2Request) (echo.Map, error) {
-
 	ctx := c.Request().Context()
 
 	provider, ok := oauth2.Providers[req.Provider]
@@ -25,12 +26,11 @@ func (s *Service) TryOAuth2(c echo.Context, req dto.Oauth2Request) (echo.Map, er
 	}
 
 	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND provider_user_id = ?", data.Provider, data.ProviderUserID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return s.NewOAuthAccount(c, data)
+	}
 	if err != nil {
 		return nil, err
-	}
-
-	if identity == nil {
-		return s.NewOAuthAccount(c, data)
 	}
 
 	user, err := s.Repository.User.Take(ctx, "id = ?", identity.UserID)
