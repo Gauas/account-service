@@ -8,7 +8,7 @@ import (
 func (h *Handler) Logout(c echo.Context) error {
 	err := h.Service.Logout(c)
 	if err != nil {
-		return response.Wrap(err)
+		return err
 	}
 
 	return response.OK(c, "logged out successfully")

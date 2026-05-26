@@ -12,7 +12,7 @@ func (h *Handler) GetUserInfo(c echo.Context) error {
 	}
 	user, err := h.Service.GetProfile(c, id)
 	if err != nil {
-		return response.Wrap(err)
+		return err
 	}
 
 	return response.OK(c, user)
