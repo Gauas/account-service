@@ -18,9 +18,9 @@ type User struct {
 	Dob    *time.Time    `json:"dob,omitempty"`
 	Gender *types.Gender `gorm:"size:50" json:"gender,omitempty"`
 
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
-	CreatedAt time.Time      `json:"created_at,omitempty"`
-	UpdatedAt time.Time      `json:"updated_at,omitempty"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
 
 	Identities    []Identity     `gorm:"foreignKey:UserID" json:"-"`
 	Verifications []Verification `gorm:"foreignKey:UserID" json:"-"`
