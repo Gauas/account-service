@@ -44,6 +44,7 @@ func (r *Router) RegisterRoutes() {
 	{
 		profile.GET("", r.Controller.Profile.GetUserInfo)
 		profile.PUT("", r.Controller.Profile.UpdateProfile)
+		profile.PATCH("/avatar", r.Controller.Profile.UpdateAvatar)
 	}
 	//profile.Use(auth)
 	//profile.PUT("", r.controller.UpdateProfile)
