@@ -3,14 +3,18 @@ package model
 import (
 	"time"
 
+	"github.com/gauas/account-service/model/types"
 	"github.com/google/uuid"
 )
 
 type MFA struct {
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey" json:"id,omitempty"`
-	UserID uuid.UUID `gorm:"type:uuid;index" json:"user_id,omitempty"`
+	ID  int64     `gorm:"type:bigint;primaryKey;autoIncrement" json:"id,omitempty"`
+	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
 
-	Type string `gorm:"size:30;index" json:"type,omitempty"`
+	User   User  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
+	UserID int64 `gorm:"type:bigint;index" json:"user_id,omitempty"`
+
+	Type types.MFAType `gorm:"size:30;index" json:"type,omitempty"`
 
 	Secret  *string `gorm:"size:255" json:"secret,omitempty"`
 	Enabled bool    `gorm:"default:false" json:"enabled,omitempty"`
@@ -19,8 +23,6 @@ type MFA struct {
 
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-
-	User User `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 }
 
 func (MFA) TableName() string {

@@ -17,7 +17,7 @@ func (h *Handler) UpdateProfile(c echo.Context) error {
 
 	err := h.Service.UpdateProfile(c, req)
 	if err != nil {
-		return response.Wrap(err)
+		return err
 	}
 
 	return response.OK(c, "successfully updated")

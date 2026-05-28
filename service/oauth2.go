@@ -2,16 +2,17 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 func (s *Service) TryOAuth2(c echo.Context, req dto.Oauth2Request) (echo.Map, error) {
-
 	ctx := c.Request().Context()
 
 	provider, ok := oauth2.Providers[req.Provider]
@@ -25,12 +26,11 @@ func (s *Service) TryOAuth2(c echo.Context, req dto.Oauth2Request) (echo.Map, er
 	}
 
 	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND provider_user_id = ?", data.Provider, data.ProviderUserID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return s.NewOAuthAccount(c, data)
+	}
 	if err != nil {
 		return nil, err
-	}
-
-	if identity == nil {
-		return s.NewOAuthAccount(c, data)
 	}
 
 	user, err := s.Repository.User.Take(ctx, "id = ?", identity.UserID)
@@ -52,21 +52,27 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 	user := &model.User{
 		Permission: "member",
 		FullName:   &data.Name,
-		AvatarURL:  &data.AvatarURL,
 	}
 
-	if user.ID, err = uuid.NewV7(); err != nil {
+	if user.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
+	avatarURL, err := s.oauthAvatarURL(c, user.Key.String(), data.AvatarURL)
+	if err != nil {
+		return nil, err
+	}
+	if avatarURL != nil {
+		user.AvatarURL = avatarURL
+	}
+
 	identity := &model.Identity{
-		UserID:         user.ID,
 		Provider:       data.Provider,
 		ProviderUserID: data.ProviderUserID,
 		Email:          data.Email,
 	}
 
-	if identity.ID, err = uuid.NewV7(); err != nil {
+	if identity.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
@@ -76,6 +82,7 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 				return err
 			}
 
+			identity.UserID = user.ID
 			if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
 				return err
 			}
@@ -88,4 +95,17 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 	}
 
 	return s.TryAuthorize(c, user)
+}
+
+func (s *Service) oauthAvatarURL(c echo.Context, seed, sourceURL string) (*string, error) {
+	if sourceURL == "" {
+		return nil, nil
+	}
+
+	url, err := s.UploadAvatarFromURL(c.Request().Context(), seed, sourceURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &url, nil
 }

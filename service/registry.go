@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gauas/account-service/dto"
@@ -17,7 +17,7 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 	ctx := c.Request().Context()
 
 	if err = req.Email.Validate(); err != nil {
-		return nil, err
+		return nil, appError(http.StatusBadRequest, err.Error())
 	}
 
 	user := &model.User{
@@ -25,37 +25,35 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 		FullName:   &req.FullName,
 	}
 
-	if user.ID, err = uuid.NewV7(); err != nil {
+	if user.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
 	if req.Email == "" {
-		return nil, fmt.Errorf("email is required")
+		return nil, appError(http.StatusBadRequest, "email is required")
 	}
 
 	identity := &model.Identity{
-		UserID:         user.ID,
 		Provider:       types.EmailIdentityProvider,
 		ProviderUserID: strings.ToLower(strings.TrimSpace(string(req.Email))),
 		Email:          &req.Email,
 	}
 
-	if identity.ID, err = uuid.NewV7(); err != nil {
+	if identity.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
 	verification := &model.Verification{
-		UserID: user.ID,
 		Method: types.EmailVerification,
 		Value:  string(req.Email),
 	}
 
-	if verification.ID, err = uuid.NewV7(); err != nil {
+	if verification.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
 	if req.Password == "" {
-		return nil, fmt.Errorf("password is required")
+		return nil, appError(http.StatusBadRequest, "password is required")
 	}
 
 	hashed, err := hashPassword(req.Password)
@@ -67,12 +65,15 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 
 	err = s.Repository.Transaction(ctx, func(ctx context.Context) error {
 		if s.Repository.Identity.Exists(ctx, "email = ?", string(req.Email)) {
-			return fmt.Errorf("account already exists")
+			return appError(http.StatusConflict, "account already exists")
 		}
 
 		if _, err = s.Repository.User.Create(ctx, user); err != nil {
 			return err
 		}
+
+		identity.UserID = user.ID
+		verification.UserID = user.ID
 
 		if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
 			return err

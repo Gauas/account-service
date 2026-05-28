@@ -19,7 +19,7 @@ type Oauth2Request struct {
 type RegisterRequest struct {
 	Email       types.Email  `json:"email"`
 	Password    string       `json:"password"`
-	FullName    string       `json:"fullname"`
+	FullName    string       `json:"full_name"`
 	Gender      types.Gender `json:"gender"`
 	DateOfBirth time.Time    `json:"date_of_birth"`
 }

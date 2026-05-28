@@ -8,8 +8,11 @@ import (
 )
 
 type Identity struct {
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey" json:"id,omitempty"`
-	UserID uuid.UUID `gorm:"type:uuid;index;not null" json:"user_id,omitempty"`
+	ID  int64     `gorm:"type:bigint;primaryKey;autoIncrement" json:"id,omitempty"`
+	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
+
+	User   User  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
+	UserID int64 `gorm:"type:bigint;index;not null" json:"user_id,omitempty"`
 
 	Provider       types.IdentityProvider `gorm:"size:50;index;not null" json:"provider,omitempty"`
 	ProviderUserID string                 `gorm:"size:255;index;not null" json:"provider_user_id,omitempty"`
@@ -20,8 +23,6 @@ type Identity struct {
 
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-
-	User User `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 }
 
 func (Identity) TableName() string {

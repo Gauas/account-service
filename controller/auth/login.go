@@ -17,7 +17,7 @@ func (h *Handler) Login(c echo.Context) error {
 
 	data, err := h.Service.Login(c, req)
 	if err != nil {
-		return response.Wrap(err)
+		return err
 	}
 
 	return response.OK(c, data)

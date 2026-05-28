@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/gauas/account-service/dto"
+	middleware "github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/supports"
 	"github.com/labstack/echo/v4"
@@ -10,7 +11,7 @@ import (
 func (s *Service) UpdateProfile(c echo.Context, req dto.UpdateProfileRequest) error {
 	ctx := c.Request().Context()
 
-	user, err := s.Repository.User.Take(ctx, "id = ?", c.Get("user_id"))
+	user, err := s.Repository.User.Take(ctx, "key = ?", middleware.UserID(ctx))
 	if err != nil {
 		return err
 	}
@@ -29,7 +30,7 @@ func (s *Service) UpdateProfile(c echo.Context, req dto.UpdateProfileRequest) er
 
 func (s *Service) GetProfile(c echo.Context, id string) (*model.User, error) {
 	ctx := c.Request().Context()
-	user, err := s.Repository.User.Take(ctx, "id = ?", id)
+	user, err := s.Repository.User.Take(ctx, "key = ?", id)
 	if err != nil {
 		return nil, err
 	}

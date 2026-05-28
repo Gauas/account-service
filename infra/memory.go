@@ -13,6 +13,7 @@ func connectMemory(cfg *config.Config) *redis.Client {
 	if err != nil {
 		log.Fatalf("infra: invalid cache URL: %v", err)
 	}
+	opts.DisableIdentity = true
 
 	client := redis.NewClient(opts)
 

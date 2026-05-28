@@ -1,18 +1,20 @@
 package profile
 
 import (
+	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/packages/response"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *Handler) GetUserInfo(c echo.Context) error {
-	id := c.Param("id")
-	if id == "" {
-		id = c.Get("user_id").(string)
+	key := c.QueryParam("key")
+	if key == "" {
+		key = middlewares.UserID(c.Request().Context())
 	}
-	user, err := h.Service.GetProfile(c, id)
+
+	user, err := h.Service.GetProfile(c, key)
 	if err != nil {
-		return response.Wrap(err)
+		return err
 	}
 
 	return response.OK(c, user)
