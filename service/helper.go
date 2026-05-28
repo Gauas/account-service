@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"strings"
 	"time"
@@ -104,11 +105,29 @@ func downloadImage(imageURL string) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	ct := resp.Header.Get("Content-Type")
-	if ct == "" {
+	ct := normalizeContentType(resp.Header.Get("Content-Type"))
+	if isGenericContentType(ct) {
 		ct = http.DetectContentType(data)
 	}
 	return data, ct, nil
+}
+
+func normalizeContentType(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	mediaType, _, err := mime.ParseMediaType(raw)
+	if err != nil {
+		return strings.TrimSpace(strings.ToLower(raw))
+	}
+	return strings.TrimSpace(strings.ToLower(mediaType))
+}
+
+func isGenericContentType(ct string) bool {
+	if ct == "" {
+		return true
+	}
+	return ct == "application/octet-stream"
 }
 
 func (s *Service) CurrentUser(ctx context.Context) (*model.User, error) {
