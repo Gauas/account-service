@@ -23,7 +23,7 @@ type Request struct {
 	Path     string
 }
 
-func Upload(ctx context.Context, client Client, req Request) (*upload.UploadResponse, error) {
+func Reader(ctx context.Context, client Client, req Request) (*upload.UploadResponse, error) {
 	return client.UploadFile(ctx, upload.UploadRequest{
 		Reader:   req.Reader,
 		Filename: req.Filename,

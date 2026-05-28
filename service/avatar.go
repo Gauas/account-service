@@ -1,7 +1,10 @@
 package service
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 
@@ -27,9 +30,46 @@ func (s *Service) UpdateAvatar(c echo.Context, file *multipart.FileHeader) (stri
 	}
 	defer src.Close()
 
-	filename := avatarFilename(user.Key.String(), file)
-	up, err := uploader.Upload(ctx, s.Infra.Upload, uploader.Request{
-		Reader:   src,
+	url, err := s.UploadReader(ctx, user.Key.String(), src, file.Header.Get("Content-Type"), file.Filename)
+	if err != nil {
+		return "", err
+	}
+
+	user.AvatarURL = &url
+	if err := s.Repository.User.Update(ctx, user); err != nil {
+		return "", err
+	}
+
+	return url, nil
+}
+
+func avatarFilename(seed string, file *multipart.FileHeader) string {
+	ext := fileExtFromContentType(file.Header.Get("Content-Type"), file.Filename)
+	return fmt.Sprintf("%s.%s", avatarHash(seed), ext)
+}
+
+func (s *Service) UploadAvatarFromURL(ctx context.Context, seed, imageURL string) (string, error) {
+	if imageURL == "" {
+		return "", appError(http.StatusBadRequest, "image_url is required")
+	}
+
+	data, contentType, err := downloadImage(imageURL)
+	if err != nil {
+		return "", err
+	}
+
+	return s.UploadReader(ctx, seed, bytes.NewReader(data), contentType, imageURL)
+}
+
+func avatarFilenameFromMeta(seed, contentType, fallback string) string {
+	ext := fileExtFromContentType(contentType, fallback)
+	return fmt.Sprintf("%s.%s", avatarHash(seed), ext)
+}
+
+func (s *Service) UploadReader(ctx context.Context, seed string, reader io.Reader, contentType, fallbackName string) (string, error) {
+	filename := avatarFilenameFromMeta(seed, contentType, fallbackName)
+	up, err := uploader.Reader(ctx, s.Infra.Upload, uploader.Request{
+		Reader:   reader,
 		Filename: filename,
 		Bucket:   uploader.AVATAR_BUCKET,
 		Path:     uploader.AVATAR_PATH,
@@ -38,15 +78,5 @@ func (s *Service) UpdateAvatar(c echo.Context, file *multipart.FileHeader) (stri
 		return "", err
 	}
 
-	user.AvatarURL = &up.URL
-	if err := s.Repository.User.Update(ctx, user); err != nil {
-		return "", err
-	}
-
 	return up.URL, nil
-}
-
-func avatarFilename(seed string, file *multipart.FileHeader) string {
-	ext := fileExtFromContentType(file.Header.Get("Content-Type"), file.Filename)
-	return fmt.Sprintf("%s.%s", avatarHash(seed), ext)
 }

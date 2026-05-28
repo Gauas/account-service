@@ -52,11 +52,18 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 	user := &model.User{
 		Permission: "member",
 		FullName:   &data.Name,
-		AvatarURL:  &data.AvatarURL,
 	}
 
 	if user.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
+	}
+
+	avatarURL, err := s.oauthAvatarURL(c, user.Key.String(), data.AvatarURL)
+	if err != nil {
+		return nil, err
+	}
+	if avatarURL != nil {
+		user.AvatarURL = avatarURL
 	}
 
 	identity := &model.Identity{
@@ -88,4 +95,17 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 	}
 
 	return s.TryAuthorize(c, user)
+}
+
+func (s *Service) oauthAvatarURL(c echo.Context, seed, sourceURL string) (*string, error) {
+	if sourceURL == "" {
+		return nil, nil
+	}
+
+	url, err := s.UploadAvatarFromURL(c.Request().Context(), seed, sourceURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &url, nil
 }
