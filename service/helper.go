@@ -1,8 +1,10 @@
 package service
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +16,7 @@ import (
 	"github.com/gauas/account-service/packages/response"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func appError(code int, msg string) error {
@@ -106,4 +109,16 @@ func downloadImage(imageURL string) ([]byte, string, error) {
 		ct = http.DetectContentType(data)
 	}
 	return data, ct, nil
+}
+
+func (s *Service) CurrentUser(ctx context.Context) (*model.User, error) {
+	user, err := s.Repository.User.Take(ctx, "key = ?", middlewares.UserID(ctx))
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, appError(http.StatusUnauthorized, "unauthorized")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/gauas/account-service/model/types"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +14,7 @@ type MFA struct {
 	User   User  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
 	UserID int64 `gorm:"type:bigint;index" json:"user_id,omitempty"`
 
-	Type string `gorm:"size:30;index" json:"type,omitempty"`
+	Type types.MFAType `gorm:"size:30;index" json:"type,omitempty"`
 
 	Secret  *string `gorm:"size:255" json:"secret,omitempty"`
 	Enabled bool    `gorm:"default:false" json:"enabled,omitempty"`

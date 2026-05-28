@@ -46,17 +46,13 @@ func (r *Router) RegisterRoutes() {
 		profile.PUT("", r.Controller.Profile.UpdateProfile)
 		profile.PATCH("/avatar", r.Controller.Profile.UpdateAvatar)
 	}
-	//profile.Use(auth)
-	//profile.PUT("", r.controller.UpdateProfile)
-	//profile.PATCH("/avatar", r.controller.UpdateAvatar)
-	//
-	//mfa := api.Group("/mfa")
-	//mfa.Use(auth)
-	//mfa.GET("/totp/qr", r.controller.GenerateTOTPQR)
-	//mfa.POST("/totp/enable", r.controller.EnableTOTP)
-	//mfa.POST("/totp/verify", r.controller.VerifyTOTP)
-	//api.GET("/verify-email/:token", r.controller.VerifyEmail)
-	//api.POST("/send-verification/:user_id", r.controller.SendVerificationEmail)
+
+	mfa := private.Group("/mfa")
+	{
+		mfa.GET("/totp/qr", r.Controller.MFA.GenerateTOTP)
+		mfa.POST("/totp/enable", r.Controller.MFA.EnableTOTP)
+		mfa.POST("/totp/verify", r.Controller.MFA.VerifyTOTP)
+	}
 
 	//sso := api.Group("/oauth2")
 	//sso.POST("/google", r.controller.)

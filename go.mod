@@ -8,11 +8,14 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
+	github.com/pquerna/otp v1.5.0
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/redis/go-redis/v9 v9.16.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.12
 )
+
+require github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -37,5 +40,3 @@ require (
 	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 )
-
-replace github.com/gauas/upload-service => ../upload-service
