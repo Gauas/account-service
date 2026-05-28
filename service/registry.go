@@ -25,7 +25,7 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 		FullName:   &req.FullName,
 	}
 
-	if user.ID, err = uuid.NewV7(); err != nil {
+	if user.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
@@ -34,23 +34,21 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 	}
 
 	identity := &model.Identity{
-		UserID:         user.ID,
 		Provider:       types.EmailIdentityProvider,
 		ProviderUserID: strings.ToLower(strings.TrimSpace(string(req.Email))),
 		Email:          &req.Email,
 	}
 
-	if identity.ID, err = uuid.NewV7(); err != nil {
+	if identity.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
 	verification := &model.Verification{
-		UserID: user.ID,
 		Method: types.EmailVerification,
 		Value:  string(req.Email),
 	}
 
-	if verification.ID, err = uuid.NewV7(); err != nil {
+	if verification.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
@@ -73,6 +71,9 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 		if _, err = s.Repository.User.Create(ctx, user); err != nil {
 			return err
 		}
+
+		identity.UserID = user.ID
+		verification.UserID = user.ID
 
 		if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
 			return err

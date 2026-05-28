@@ -33,7 +33,7 @@ func hashPassword(password string) (string, error) {
 }
 
 func (s *Service) TryAuthorize(c echo.Context, user *model.User) (echo.Map, error) {
-	tokens, err := s.Infra.AuthSDK.CreateToken(c.Request().Context(), user.ID, user.Permission, middlewares.DeviceID(c.Request().Context()))
+	tokens, err := s.Infra.AuthSDK.CreateToken(c.Request().Context(), user.Key, user.Permission, middlewares.DeviceID(c.Request().Context()))
 	if err != nil {
 		return nil, err
 	}

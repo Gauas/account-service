@@ -7,12 +7,12 @@ import (
 )
 
 func (h *Handler) GetUserInfo(c echo.Context) error {
-	id := c.QueryParam("id")
-	if id == "" {
-		id = middlewares.UserID(c.Request().Context())
+	key := c.QueryParam("key")
+	if key == "" {
+		key = middlewares.UserID(c.Request().Context())
 	}
 
-	user, err := h.Service.GetProfile(c, id)
+	user, err := h.Service.GetProfile(c, key)
 	if err != nil {
 		return err
 	}

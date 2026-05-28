@@ -55,18 +55,17 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 		AvatarURL:  &data.AvatarURL,
 	}
 
-	if user.ID, err = uuid.NewV7(); err != nil {
+	if user.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
 	identity := &model.Identity{
-		UserID:         user.ID,
 		Provider:       data.Provider,
 		ProviderUserID: data.ProviderUserID,
 		Email:          data.Email,
 	}
 
-	if identity.ID, err = uuid.NewV7(); err != nil {
+	if identity.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
@@ -76,6 +75,7 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 				return err
 			}
 
+			identity.UserID = user.ID
 			if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
 				return err
 			}
