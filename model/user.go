@@ -11,11 +11,11 @@ import (
 type User struct {
 	ID  int64     `gorm:"type:bigint;primaryKey;autoIncrement" json:"id,omitempty"`
 	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
-	
+
 	Permission string `gorm:"size:50;index" json:"permission,omitempty"`
 
 	FullName  *string `gorm:"size:255" json:"full_name,omitempty"`
-	AvatarURL *string `gorm:"size:500" json:"avatar_url,omitempty"`
+	AvatarURL *string `gorm:"size:500" json:"avatar_url,omitempty" default:"'https://cdn.gauas.com/images/avatar/default.jpg'"`
 
 	Dob    *time.Time    `json:"dob,omitempty"`
 	Gender *types.Gender `gorm:"size:50" json:"gender,omitempty"`

@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/model"
+	"github.com/gauas/account-service/model/types"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -75,6 +77,24 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 	if identity.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
+	var verification *model.Verification
+	if data.Email != nil {
+		var key uuid.UUID
+		if key, err = uuid.NewV7(); err != nil {
+			return nil, err
+		}
+
+		verification = &model.Verification{
+			Key:        key,
+			Method:     types.EmailVerification,
+			Value:      string(*data.Email),
+			IsVerified: data.EmailVerified,
+		}
+		if data.EmailVerified {
+			now := time.Now().UTC()
+			verification.VerifiedAt = &now
+		}
+	}
 
 	err = s.Repository.Transaction(ctx,
 		func(ctx context.Context) error {
@@ -84,6 +104,14 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 
 			identity.UserID = user.ID
 			if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
+				return err
+			}
+			if verification == nil {
+				return nil
+			}
+
+			verification.UserID = user.ID
+			if _, err = s.Repository.Verification.Create(ctx, verification); err != nil {
 				return err
 			}
 
