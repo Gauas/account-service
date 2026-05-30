@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (s *Service) UpdateProfile(c echo.Context, req dto.UpdateProfileRequest) error {
+func (s *Service) UpdateInfo(c echo.Context, req dto.UpdateProfileRequest) error {
 	ctx := c.Request().Context()
 
 	user, err := s.Repository.User.Take(ctx, "key = ?", middleware.UserID(ctx))
@@ -28,7 +28,7 @@ func (s *Service) UpdateProfile(c echo.Context, req dto.UpdateProfileRequest) er
 	return nil
 }
 
-func (s *Service) GetProfile(c echo.Context, id string) (*model.User, error) {
+func (s *Service) GetInfo(c echo.Context, id string) (*model.User, error) {
 	ctx := c.Request().Context()
 	user, err := s.Repository.User.Take(ctx, "key = ?", id)
 	if err != nil {

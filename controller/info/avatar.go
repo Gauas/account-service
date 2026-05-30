@@ -1,4 +1,4 @@
-package profile
+package info
 
 import (
 	"net/http"

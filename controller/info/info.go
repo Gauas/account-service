@@ -1,4 +1,4 @@
-package profile
+package info
 
 import (
 	"github.com/gauas/account-service/dto"
@@ -8,13 +8,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) GetUserInfo(c echo.Context) error {
+func (h *Handler) GetInfo(c echo.Context) error {
 	key := c.QueryParam("key")
 	if key == "" {
 		key = middlewares.UserID(c.Request().Context())
 	}
 
-	user, err := h.Service.GetProfile(c, key)
+	user, err := h.Service.GetInfo(c, key)
 	if err != nil {
 		return err
 	}

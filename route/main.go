@@ -40,11 +40,11 @@ func (r *Router) RegisterRoutes() {
 		private.POST("/logout", r.Controller.Authentication.Logout)
 	}
 
-	profile := private.Group("/profile")
+	info := private.Group("/info")
 	{
-		profile.GET("", r.Controller.Profile.GetUserInfo)
-		profile.PUT("", r.Controller.Profile.UpdateProfile)
-		profile.PATCH("/avatar", r.Controller.Profile.UpdateAvatar)
+		info.GET("", r.Controller.Info.GetInfo)
+		info.PUT("", r.Controller.Info.UpdateInfo)
+		info.PATCH("/avatar", r.Controller.Info.UpdateAvatar)
 	}
 
 	mfa := private.Group("/mfa")

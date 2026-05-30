@@ -1,4 +1,4 @@
-package profile
+package info
 
 import (
 	"net/http"
@@ -8,14 +8,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) UpdateProfile(c echo.Context) error {
+func (h *Handler) UpdateInfo(c echo.Context) error {
 	var req dto.UpdateProfileRequest
 
 	if err := c.Bind(&req); err != nil {
 		return response2.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	err := h.Service.UpdateProfile(c, req)
+	err := h.Service.UpdateInfo(c, req)
 	if err != nil {
 		return err
 	}

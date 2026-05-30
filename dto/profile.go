@@ -18,5 +18,6 @@ type ProfileResponse struct {
 	Dob        string `json:"dob"`
 	Gender     string `json:"gender"`
 	AvatarURL  string `json:"avatar_url"`
+	IsOnboarded bool   `json:"is_onboarded"`
 	Permission string `json:"permission"`
 }
