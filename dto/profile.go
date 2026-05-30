@@ -11,3 +11,12 @@ type UpdateProfileRequest struct {
 	Dob      *time.Time    `json:"dob"`
 	Gender   *types.Gender `json:"gender"`
 }
+
+type ProfileResponse struct {
+	Key        string `json:"key"`
+	FullName   string `json:"full_name"`
+	Dob        string `json:"dob"`
+	Gender     string `json:"gender"`
+	AvatarURL  string `json:"avatar_url"`
+	Permission string `json:"permission"`
+}

@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/gauas/account-service/packages/response"
+	"github.com/gauas/account-service/supports/response"
 	"github.com/labstack/echo/v4"
 )
 

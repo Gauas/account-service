@@ -9,16 +9,16 @@ import (
 )
 
 type User struct {
-	ID  int64     `gorm:"type:bigint;primaryKey;autoIncrement" json:"id,omitempty"`
-	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
+	ID  int64     `gorm:"type:bigint;primaryKey;autoIncrement" json:"-"`
+	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key"`
 
-	Permission string `gorm:"size:50;index" json:"permission,omitempty"`
+	Permission string `gorm:"size:50;index" json:"permission"`
 
-	FullName  *string `gorm:"size:255" json:"full_name,omitempty"`
-	AvatarURL *string `gorm:"size:500" json:"avatar_url,omitempty" default:"'https://cdn.gauas.com/images/avatar/default.jpg'"`
+	FullName  *string `gorm:"size:255" json:"full_name"`
+	AvatarURL *string `gorm:"size:500" json:"avatar_url" default:"'https://cdn.gauas.com/images/avatar/default.jpg'"`
 
-	Dob    *time.Time    `json:"dob,omitempty"`
-	Gender *types.Gender `gorm:"size:50" json:"gender,omitempty"`
+	Dob    *time.Time    `json:"dob"`
+	Gender *types.Gender `gorm:"size:50" json:"gender"`
 
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 	CreatedAt time.Time      `json:"-"`

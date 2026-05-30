@@ -1,8 +1,10 @@
 package profile
 
 import (
+	"github.com/gauas/account-service/dto"
 	"github.com/gauas/account-service/middlewares"
-	"github.com/gauas/account-service/packages/response"
+	"github.com/gauas/account-service/model"
+	"github.com/gauas/account-service/supports/response"
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,5 +19,5 @@ func (h *Handler) GetUserInfo(c echo.Context) error {
 		return err
 	}
 
-	return response.OK(c, user)
+	return response.OK(c, response.Refine[*model.User, dto.ProfileResponse](user))
 }

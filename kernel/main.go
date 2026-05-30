@@ -9,8 +9,8 @@ import (
 	"github.com/gauas/account-service/config"
 	"github.com/gauas/account-service/controller"
 	"github.com/gauas/account-service/middlewares"
-	"github.com/gauas/account-service/packages/response"
 	"github.com/gauas/account-service/route"
+	response2 "github.com/gauas/account-service/supports/response"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,20 +28,20 @@ func (k *Kernel) Start() {
 	server := echo.New()
 	server.HideBanner = true
 	server.HTTPErrorHandler = func(err error, c echo.Context) {
-		var e *response.Error
+		var e *response2.Error
 		if errors.As(err, &e) {
-			_ = c.JSON(e.Code, response.Response{Status: e.Code, Error: e.Message})
+			_ = c.JSON(e.Code, response2.Response{Status: e.Code, Error: e.Message})
 			return
 		}
 
 		var httpErr *echo.HTTPError
 		if errors.As(err, &httpErr) {
 			code := httpErr.Code
-			_ = c.JSON(code, response.Response{Status: code, Error: fmt.Sprintf("%v", httpErr.Message)})
+			_ = c.JSON(code, response2.Response{Status: code, Error: fmt.Sprintf("%v", httpErr.Message)})
 			return
 		}
 
-		_ = c.JSON(http.StatusInternalServerError, response.Response{Status: http.StatusInternalServerError, Error: "internal server error"})
+		_ = c.JSON(http.StatusInternalServerError, response2.Response{Status: http.StatusInternalServerError, Error: "internal server error"})
 	}
 
 	k.middleware.RegisterGlobal(server)
