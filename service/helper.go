@@ -14,7 +14,7 @@ import (
 
 	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/model"
-	"github.com/gauas/account-service/supports/response"
+	response "github.com/gauas/account-service/packages/httpresp"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"

@@ -3,16 +3,16 @@ package info
 import (
 	"net/http"
 
-	"github.com/gauas/account-service/dto"
-	response2 "github.com/gauas/account-service/supports/response"
+	"github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/packages/httpresp"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *Handler) UpdateInfo(c echo.Context) error {
-	var req dto.UpdateProfileRequest
+	var req request.UpdateProfileRequest
 
 	if err := c.Bind(&req); err != nil {
-		return response2.NewError(http.StatusBadRequest, "invalid request")
+		return httpresp.NewError(http.StatusBadRequest, "invalid request")
 	}
 
 	err := h.Service.UpdateInfo(c, req)
@@ -20,5 +20,5 @@ func (h *Handler) UpdateInfo(c echo.Context) error {
 		return err
 	}
 
-	return response2.OK(c, "successfully updated")
+	return httpresp.OK(c, "successfully updated")
 }

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gauas/account-service/dto"
+	dtoReq "github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
 	"github.com/gauas/account-service/supports/oauth2"
@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *Service) TryOAuth2(c echo.Context, req dto.Oauth2Request) (echo.Map, error) {
+func (s *Service) TryOAuth2(c echo.Context, req dtoReq.Oauth2Request) (echo.Map, error) {
 	ctx := c.Request().Context()
 
 	provider, ok := oauth2.Providers[req.Provider]
@@ -137,3 +137,4 @@ func (s *Service) oauthAvatarURL(c echo.Context, seed, sourceURL string) (*strin
 
 	return &url, nil
 }
+

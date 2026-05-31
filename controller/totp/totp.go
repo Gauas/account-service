@@ -3,8 +3,8 @@ package totp
 import (
 	"net/http"
 
-	"github.com/gauas/account-service/dto"
-	response2 "github.com/gauas/account-service/supports/response"
+	"github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/packages/httpresp"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,32 +14,32 @@ func (h *Handler) GenerateTOTP(c echo.Context) error {
 		return err
 	}
 
-	return response2.OK(c, data)
+	return httpresp.OK(c, data)
 }
 
 func (h *Handler) EnableTOTP(c echo.Context) error {
-	var req dto.EnableTOTPRequest
+	var req request.EnableTOTPRequest
 	if err := c.Bind(&req); err != nil {
-		return response2.NewError(http.StatusBadRequest, "invalid request body")
+		return httpresp.NewError(http.StatusBadRequest, "invalid request body")
 	}
 	if req.OTPCode == "" {
-		return response2.NewError(http.StatusBadRequest, "otp_code is required")
+		return httpresp.NewError(http.StatusBadRequest, "otp_code is required")
 	}
 
 	if err := h.Service.EnableTOTP(c, req.OTPCode); err != nil {
 		return err
 	}
 
-	return response2.NoContent(c, "TOTP enabled successfully")
+	return httpresp.NoContent(c, "TOTP enabled successfully")
 }
 
 func (h *Handler) VerifyTOTP(c echo.Context) error {
-	var req dto.VerifyTOTPRequest
+	var req request.VerifyTOTPRequest
 	if err := c.Bind(&req); err != nil {
-		return response2.NewError(http.StatusBadRequest, "invalid request body")
+		return httpresp.NewError(http.StatusBadRequest, "invalid request body")
 	}
 	if req.OTPCode == "" {
-		return response2.NewError(http.StatusBadRequest, "otp_code is required")
+		return httpresp.NewError(http.StatusBadRequest, "otp_code is required")
 	}
 
 	data, err := h.Service.VerifyTOTP(c, req.OTPCode)
@@ -47,5 +47,5 @@ func (h *Handler) VerifyTOTP(c echo.Context) error {
 		return err
 	}
 
-	return response2.OK(c, data)
+	return httpresp.OK(c, data)
 }

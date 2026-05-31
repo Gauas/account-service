@@ -10,7 +10,7 @@ import (
 	"github.com/gauas/account-service/controller"
 	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/route"
-	response2 "github.com/gauas/account-service/supports/response"
+	response2 response "github.com/gauas/account-service/supports/httpresp"
 	"github.com/labstack/echo/v4"
 )
 
@@ -55,3 +55,5 @@ func (k *Kernel) Start() {
 		log.Fatal(err)
 	}
 }
+
+
