@@ -53,7 +53,4 @@ func (r *Router) RegisterRoutes() {
 		mfa.POST("/totp/enable", r.Controller.MFA.EnableTOTP)
 		mfa.POST("/totp/verify", r.Controller.MFA.VerifyTOTP)
 	}
-
-	//sso := api.Group("/oauth2")
-	//sso.POST("/google", r.controller.)
 }

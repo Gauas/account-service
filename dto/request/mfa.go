@@ -1,5 +1,7 @@
 package request
 
+type GenerateTOTPRequest struct{}
+
 type EnableTOTPRequest struct {
 	OTPCode string `json:"otp_code"`
 }
