@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gauas/account-service/dto"
+	dtoReq "github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
-func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map, error) {
+func (s *Service) NewAccount(c echo.Context, req dtoReq.RegisterRequest) (echo.Map, error) {
 	err := error(nil)
 	ctx := c.Request().Context()
 
@@ -90,3 +90,4 @@ func (s *Service) NewAccount(c echo.Context, req dto.RegisterRequest) (echo.Map,
 
 	return s.TryAuthorize(c, user)
 }
+
