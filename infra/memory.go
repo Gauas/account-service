@@ -8,11 +8,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func connectMemory(cfg config.Config) *redis.Client {
+func connectMemory(cfg *config.Config) *redis.Client {
 	opts, err := redis.ParseURL(cfg.MemoryURL)
 	if err != nil {
 		log.Fatalf("infra: invalid cache URL: %v", err)
 	}
+	opts.DisableIdentity = true
 
 	client := redis.NewClient(opts)
 

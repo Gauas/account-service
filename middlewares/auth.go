@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -16,31 +15,20 @@ func (m *Middleware) Auth() echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "authorization token is required")
 			}
 
-			if err := m.service.ValidateAccessToken(context.Background(), token); err != nil {
+			result, err := m.Infra.AuthSDK.ValidateToken(c.Request().Context(), token)
+			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid or expired token")
 			}
 
-			parsed, _, err := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
-			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "malformed token")
-			}
+			ctx := c.Request().Context()
 
-			claims, ok := parsed.Claims.(jwt.MapClaims)
-			if !ok {
-				return echo.NewHTTPError(http.StatusUnauthorized, "invalid token claims")
-			}
+			ctx = context.WithValue(ctx, userIDKey, result.UserID)
 
-			if sub, ok := claims["sub"].(string); ok {
-				c.Set("user_id", sub)
-			} else if uid, ok := claims["user_id"].(string); ok {
-				c.Set("user_id", uid)
-			} else {
-				return echo.NewHTTPError(http.StatusUnauthorized, "missing user_id in token")
-			}
+			ctx = context.WithValue(ctx, permissionKey, result.Permission)
 
-			if perm, ok := claims["permission"].(string); ok {
-				c.Set("permission", perm)
-			}
+			ctx = context.WithValue(ctx, deviceIDKey, result.DeviceID)
+
+			c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)
 		}
