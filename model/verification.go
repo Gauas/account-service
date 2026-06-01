@@ -8,11 +8,11 @@ import (
 )
 
 type Verification struct {
-	ID  int64     `gorm:"type:bigint;primaryKey;autoIncrement" json:"id,omitempty"`
+	ID  int64     `gorm:"type:bigint;primaryKey;autoIncrement" json:"-"`
 	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
 
 	User   User  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
-	UserID int64 `gorm:"type:bigint;index" json:"user_id,omitempty"`
+	UserID int64 `gorm:"type:bigint;index" json:"-"`
 
 	Method types.VerificationMethod `gorm:"size:20;index" json:"method,omitempty"`
 	Value  string                   `gorm:"size:255" json:"value,omitempty"`

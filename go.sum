@@ -15,8 +15,6 @@ github.com/gauas/authorization-service v1.0.4 h1:DVNuCHcBviDhYR1fHJalm10gN44HuvS
 github.com/gauas/authorization-service v1.0.4/go.mod h1:d7SGsCOhysj1Xy9h8N2tS019lJvIJWrQhuDw0YzaHgA=
 github.com/gauas/config-service v1.0.5 h1:a5l5aT3ctlrGWWN353rRn2povQ2PwaQdfDaJJ2xHZcY=
 github.com/gauas/config-service v1.0.5/go.mod h1:lvU/8nMMblG9T0gJDnWaWcKmfctQHMX6NYOVMmsHL8s=
-github.com/gauas/upload-service v1.0.1 h1:OpncBg3VAmXFfn/RIxEu9/opfMI8ICMYJFwaaX4IFKU=
-github.com/gauas/upload-service v1.0.1/go.mod h1:I2TfjeTRkatwFRYETgJWR5r1U/WmmyhoeKzhj53eHIQ=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=

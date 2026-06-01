@@ -69,10 +69,11 @@ func avatarFilenameFromMeta(seed, contentType, fallback string) string {
 func (s *Service) UploadReader(ctx context.Context, seed string, reader io.Reader, contentType, fallbackName string) (string, error) {
 	filename := avatarFilenameFromMeta(seed, contentType, fallbackName)
 	up, err := uploader.Reader(ctx, s.Infra.Upload, uploader.Request{
-		Reader:   reader,
-		Filename: filename,
-		Bucket:   uploader.AVATAR_BUCKET,
-		Path:     uploader.AVATAR_PATH,
+		Reader:      reader,
+		Filename:    filename,
+		Bucket:      uploader.AVATAR_BUCKET,
+		Path:        uploader.AVATAR_PATH,
+		ContentType: contentType,
 	})
 	if err != nil {
 		return "", err
