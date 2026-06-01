@@ -3,13 +3,13 @@ package service
 import (
 	"errors"
 
-	"github.com/gauas/account-service/dto"
+	dtoReq "github.com/gauas/account-service/dto/request"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
-func (s *Service) Login(c echo.Context, req dto.LoginRequest) (echo.Map, error) {
+func (s *Service) Login(c echo.Context, req dtoReq.LoginRequest) (echo.Map, error) {
 	ctx := c.Request().Context()
 	identity, err := s.Repository.Identity.Take(ctx, "email = ?", req.Email)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -30,3 +30,4 @@ func (s *Service) Login(c echo.Context, req dto.LoginRequest) (echo.Map, error) 
 
 	return s.TryAuthorize(c, user)
 }
+

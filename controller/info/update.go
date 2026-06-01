@@ -1,4 +1,4 @@
-package auth
+package info
 
 import (
 	"net/http"
@@ -8,17 +8,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) Login(c echo.Context) error {
-	var req request.LoginRequest
+func (h *Handler) UpdateInfo(c echo.Context) error {
+	var req request.UpdateProfileRequest
 
 	if err := c.Bind(&req); err != nil {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	data, err := h.Service.Login(c, req)
+	err := h.Service.UpdateInfo(c, req)
 	if err != nil {
 		return err
 	}
 
-	return httpresp.OK(c, data)
+	return httpresp.OK(c, "successfully updated")
 }

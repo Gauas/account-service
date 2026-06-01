@@ -2,8 +2,8 @@ package infra
 
 import (
 	"github.com/gauas/account-service/config"
+	"github.com/gauas/account-service/packages/uploader"
 	auth "github.com/gauas/authorization-service/sdk"
-	upload "github.com/gauas/upload-service/sdk"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -14,7 +14,7 @@ type Infra struct {
 	Memory  *redis.Client
 	Queue   *amqp.Channel
 	AuthSDK *auth.Client
-	Upload  *upload.Client
+	Upload  *uploader.Client
 }
 
 func New(cfg *config.Config) *Infra {
