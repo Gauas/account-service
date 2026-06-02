@@ -17,3 +17,4 @@ app/
 
 # Ignore pkg directory if not necessary in the repository
 pkg/
+.config
