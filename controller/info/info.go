@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) GetInfo(c echo.Context) error {
+func (h *Handler) Get(c echo.Context) error {
 	key := c.QueryParam("key")
 	if key == "" {
 		key = middlewares.UserID(c.Request().Context())
