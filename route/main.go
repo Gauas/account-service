@@ -42,15 +42,15 @@ func (r *Router) RegisterRoutes() {
 
 	info := private.Group("/info")
 	{
-		info.GET("", r.Controller.Info.GetInfo)
-		info.PUT("", r.Controller.Info.UpdateInfo)
+		info.GET("", r.Controller.Info.Get)
+		info.PUT("", r.Controller.Info.Update)
 		info.PATCH("/avatar", r.Controller.Info.UpdateAvatar)
 	}
 
 	mfa := private.Group("/mfa")
 	{
-		mfa.GET("/totp/qr", r.Controller.MFA.GenerateTOTP)
-		mfa.POST("/totp/enable", r.Controller.MFA.EnableTOTP)
-		mfa.POST("/totp/verify", r.Controller.MFA.VerifyTOTP)
+		mfa.GET("/totp/qr", r.Controller.TOTP.Generate)
+		mfa.POST("/totp/enable", r.Controller.TOTP.Enable)
+		mfa.POST("/totp/verify", r.Controller.TOTP.Verify)
 	}
 }
