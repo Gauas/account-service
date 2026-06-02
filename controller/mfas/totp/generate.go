@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) GenerateTOTP(c echo.Context) error {
+func (h *Handler) Generate(c echo.Context) error {
 	data, err := h.Service.GenerateTOTP(c)
 	if err != nil {
 		return err

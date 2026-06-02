@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) VerifyTOTP(c echo.Context) error {
+func (h *Handler) Verify(c echo.Context) error {
 	var req request.VerifyTOTPRequest
 	if err := c.Bind(&req); err != nil {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request body")

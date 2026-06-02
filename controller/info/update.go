@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) UpdateInfo(c echo.Context) error {
+func (h *Handler) Update(c echo.Context) error {
 	var req request.UpdateProfileRequest
 
 	if err := c.Bind(&req); err != nil {

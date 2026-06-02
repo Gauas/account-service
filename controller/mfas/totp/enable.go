@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) EnableTOTP(c echo.Context) error {
+func (h *Handler) Enable(c echo.Context) error {
 	var req request.EnableTOTPRequest
 	if err := c.Bind(&req); err != nil {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request body")
