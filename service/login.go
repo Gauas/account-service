@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	dtoReq "github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/model/types"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -11,10 +12,13 @@ import (
 
 func (s *Service) Login(c echo.Context, req dtoReq.LoginRequest) (echo.Map, error) {
 	ctx := c.Request().Context()
-	identity, err := s.Repository.Identity.Take(ctx, "email = ?", req.Email)
+	email := req.Email.Normalize()
+
+	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND email = ?", types.EmailIdentityProvider, string(email))
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, echo.ErrUnauthorized
 	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -30,4 +34,3 @@ func (s *Service) Login(c echo.Context, req dtoReq.LoginRequest) (echo.Map, erro
 
 	return s.TryAuthorize(c, user)
 }
-

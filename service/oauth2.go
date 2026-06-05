@@ -3,11 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"time"
+	"net/http"
 
 	dtoReq "github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
-	"github.com/gauas/account-service/model/types"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -26,8 +25,24 @@ func (s *Service) TryOAuth2(c echo.Context, req dtoReq.Oauth2Request) (echo.Map,
 	if err != nil {
 		return nil, err
 	}
+	if data.Email != nil {
+		email := data.Email.Normalize()
+		data.Email = &email
+	}
 
 	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND provider_user_id = ?", data.Provider, data.ProviderUserID)
+	if err == nil {
+		return s.OpenSession(c, identity.UserID)
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	if data.Email == nil || *data.Email == "" || !data.EmailVerified {
+		return s.NewOAuthAccount(c, data)
+	}
+
+	identity, err = s.Repository.Identity.Take(ctx, "email = ?", string(*data.Email))
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return s.NewOAuthAccount(c, data)
 	}
@@ -35,16 +50,47 @@ func (s *Service) TryOAuth2(c echo.Context, req dtoReq.Oauth2Request) (echo.Map,
 		return nil, err
 	}
 
-	user, err := s.Repository.User.Take(ctx, "id = ?", identity.UserID)
+	if err = s.LinkIdentify(ctx, identity.UserID, data); err != nil {
+		return nil, err
+	}
+
+	return s.OpenSession(c, identity.UserID)
+}
+
+func (s *Service) OpenSession(c echo.Context, userID int64) (echo.Map, error) {
+	user, err := s.Repository.User.Take(c.Request().Context(), "id = ?", userID)
 	if err != nil {
 		return nil, err
 	}
 
-	if user == nil {
-		return nil, echo.NewHTTPError(404, "user not found")
+	return s.TryAuthorize(c, user)
+}
+
+func (s *Service) LinkIdentify(ctx context.Context, userID int64, data *oauth2.UserInfo) error {
+	key, err := uuid.NewV7()
+	if err != nil {
+		return err
 	}
 
-	return s.TryAuthorize(c, user)
+	identity := &model.Identity{
+		Key:            key,
+		UserID:         userID,
+		Provider:       data.Provider,
+		ProviderUserID: data.ProviderUserID,
+		Email:          data.Email,
+	}
+
+	return s.Repository.Transaction(ctx, func(ctx context.Context) error {
+		if s.Repository.Identity.Exists(ctx, "user_id = ? AND provider = ?", userID, identity.Provider) {
+			return appError(http.StatusConflict, "account already linked with provider")
+		}
+
+		if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
+			return err
+		}
+
+		return s.verifyEmail(ctx, userID, *data.Email)
+	})
 }
 
 func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.Map, error) {
@@ -60,7 +106,7 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 		return nil, err
 	}
 
-	avatarURL, err := s.oauthAvatarURL(c, user.Key.String(), data.AvatarURL)
+	avatarURL, err := s.SyncAvatar(c, user.Key.String(), data.AvatarURL)
 	if err != nil {
 		return nil, err
 	}
@@ -77,23 +123,10 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 	if identity.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
-	var verification *model.Verification
-	if data.Email != nil {
-		var key uuid.UUID
-		if key, err = uuid.NewV7(); err != nil {
-			return nil, err
-		}
 
-		verification = &model.Verification{
-			Key:        key,
-			Method:     types.EmailVerification,
-			Value:      string(*data.Email),
-			IsVerified: data.EmailVerified,
-		}
-		if data.EmailVerified {
-			now := time.Now().UTC()
-			verification.VerifiedAt = &now
-		}
+	verification, err := newVerification(data)
+	if err != nil {
+		return nil, err
 	}
 
 	err = s.Repository.Transaction(ctx,
@@ -125,7 +158,7 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 	return s.TryAuthorize(c, user)
 }
 
-func (s *Service) oauthAvatarURL(c echo.Context, seed, sourceURL string) (*string, error) {
+func (s *Service) SyncAvatar(c echo.Context, seed, sourceURL string) (*string, error) {
 	if sourceURL == "" {
 		return nil, nil
 	}
@@ -137,4 +170,3 @@ func (s *Service) oauthAvatarURL(c echo.Context, seed, sourceURL string) (*strin
 
 	return &url, nil
 }
-
