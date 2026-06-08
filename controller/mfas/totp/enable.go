@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/packages/httpresp"
 	"github.com/labstack/echo/v4"
 )
@@ -14,7 +15,7 @@ func (h *Handler) Enable(c echo.Context) error {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request body")
 	}
 
-	if err := h.Service.EnableTOTP(c, req); err != nil {
+	if err := h.Service.EnableTOTP(c.Request().Context(), middlewares.UserID(c.Request().Context()), req); err != nil {
 		return err
 	}
 

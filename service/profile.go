@@ -1,17 +1,18 @@
 package service
 
 import (
-	dtoReq "github.com/gauas/account-service/dto/request"
-	middleware "github.com/gauas/account-service/middlewares"
+	"context"
+	"errors"
+	"net/http"
+
+	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/supports"
-	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
-func (s *Service) UpdateInfo(c echo.Context, req dtoReq.UpdateProfileRequest) error {
-	ctx := c.Request().Context()
-
-	user, err := s.Repository.User.Take(ctx, "key = ?", middleware.UserID(ctx))
+func (s *Service) UpdateInfo(ctx context.Context, userKey string, req request.UpdateProfileRequest) error {
+	user, err := s.Repository.User.Take(ctx, "key = ?", userKey)
 	if err != nil {
 		return err
 	}
@@ -28,13 +29,18 @@ func (s *Service) UpdateInfo(c echo.Context, req dtoReq.UpdateProfileRequest) er
 	return nil
 }
 
-func (s *Service) GetInfo(c echo.Context, id string) (*model.User, error) {
-	ctx := c.Request().Context()
-	user, err := s.Repository.User.Take(ctx, "key = ?", id)
+func (s *Service) GetInfoByKey(ctx context.Context, key string) (*model.User, error) {
+	if key == "" {
+		return nil, appError(http.StatusBadRequest, "key is required")
+	}
+
+	user, err := s.Repository.User.Take(ctx, "key = ?", key)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, appError(http.StatusNotFound, "user not found")
+	}
 	if err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
-

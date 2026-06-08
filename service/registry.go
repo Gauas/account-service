@@ -2,21 +2,21 @@ package service
 
 import (
 	"context"
+	"errors"
 	"net/http"
-	"strings"
 
-	dtoReq "github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
-func (s *Service) NewAccount(c echo.Context, req dtoReq.RegisterRequest) (echo.Map, error) {
+func (s *Service) NewAccount(ctx context.Context, req request.RegisterRequest, deviceID string) (*Session, error) {
 	err := error(nil)
-	ctx := c.Request().Context()
+	email := req.Email.Normalize()
 
-	if err = req.Email.Validate(); err != nil {
+	if err = email.Validate(); err != nil {
 		return nil, appError(http.StatusBadRequest, err.Error())
 	}
 
@@ -29,26 +29,26 @@ func (s *Service) NewAccount(c echo.Context, req dtoReq.RegisterRequest) (echo.M
 		return nil, err
 	}
 
-	if req.Email == "" {
+	if email == "" {
 		return nil, appError(http.StatusBadRequest, "email is required")
 	}
 
 	identity := &model.Identity{
 		Provider:       types.EmailIdentityProvider,
-		ProviderUserID: strings.ToLower(strings.TrimSpace(string(req.Email))),
-		Email:          &req.Email,
+		ProviderUserID: string(email),
+		Email:          &email,
 	}
 
 	if identity.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
-	verification := &model.Verification{
+	ver := &model.Verification{
 		Method: types.EmailVerification,
-		Value:  string(req.Email),
+		Value:  string(email),
 	}
 
-	if verification.Key, err = uuid.NewV7(); err != nil {
+	if ver.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
 	}
 
@@ -56,38 +56,85 @@ func (s *Service) NewAccount(c echo.Context, req dtoReq.RegisterRequest) (echo.M
 		return nil, appError(http.StatusBadRequest, "password is required")
 	}
 
-	hashed, err := hashPassword(req.Password)
+	hash, err := hashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	identity.Hash = &hashed
+	identity.Hash = &hash
+	userID := int64(0)
 
 	err = s.Repository.Transaction(ctx, func(ctx context.Context) error {
-		if s.Repository.Identity.Exists(ctx, "email = ?", string(req.Email)) {
+		old, err := s.Repository.Identity.Take(ctx, "email = ?", string(email))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return s.SaveAccount(ctx, user, identity, ver)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		if old.Provider == types.EmailIdentityProvider {
 			return appError(http.StatusConflict, "account already exists")
 		}
 
-		if _, err = s.Repository.User.Create(ctx, user); err != nil {
-			return err
-		}
-
-		identity.UserID = user.ID
-		verification.UserID = user.ID
-
-		if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
-			return err
-		}
-
-		if _, err = s.Repository.Verification.Create(ctx, verification); err != nil {
-			return err
-		}
-		return nil
+		userID = old.UserID
+		return s.LinkAccount(ctx, userID, email, hash)
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return s.TryAuthorize(c, user)
+	if userID != int64(0) {
+		return s.OpenSessionByID(ctx, userID, deviceID)
+	}
+
+	return s.OpenSession(ctx, user, deviceID)
 }
 
+func (s *Service) OpenSessionByID(ctx context.Context, userID int64, deviceID string) (*Session, error) {
+	user, err := s.Repository.User.Take(ctx, "id = ?", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.OpenSession(ctx, user, deviceID)
+}
+
+func (s *Service) SaveAccount(ctx context.Context, user *model.User, identity *model.Identity, verification *model.Verification) error {
+	if _, err := s.Repository.User.Create(ctx, user); err != nil {
+		return err
+	}
+
+	identity.UserID = user.ID
+	verification.UserID = user.ID
+
+	if _, err := s.Repository.Identity.Create(ctx, identity); err != nil {
+		return err
+	}
+
+	_, err := s.Repository.Verification.Create(ctx, verification)
+	return err
+}
+
+func (s *Service) LinkAccount(ctx context.Context, userID int64, email types.Email, hash string) error {
+	key, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+
+	if s.Repository.Identity.Exists(ctx, "user_id = ? AND provider = ?", userID, types.EmailIdentityProvider) {
+		return appError(http.StatusConflict, "account already linked with email")
+	}
+
+	_, err = s.Repository.Identity.Create(ctx, &model.Identity{
+		Key:            key,
+		UserID:         userID,
+		Provider:       types.EmailIdentityProvider,
+		ProviderUserID: string(email),
+		Email:          &email,
+		Hash:           &hash,
+	})
+
+	return err
+}
