@@ -5,20 +5,17 @@ import (
 	"errors"
 	"net/http"
 
-	dtoReq "github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
-func (s *Service) TryOAuth2(c echo.Context, req dtoReq.Oauth2Request) (echo.Map, error) {
-	ctx := c.Request().Context()
-
+func (s *Service) TryOAuth2(ctx context.Context, req request.Oauth2Request, deviceID string) (*Session, error) {
 	provider, ok := oauth2.Providers[req.Provider]
 	if !ok {
-		return nil, echo.NewHTTPError(400, "unsupported oauth2 provider")
+		return nil, appError(http.StatusBadRequest, "unsupported oauth2 provider")
 	}
 
 	data, err := provider.GetUser(req.Token)
@@ -32,19 +29,19 @@ func (s *Service) TryOAuth2(c echo.Context, req dtoReq.Oauth2Request) (echo.Map,
 
 	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND provider_user_id = ?", data.Provider, data.ProviderUserID)
 	if err == nil {
-		return s.OpenSession(c, identity.UserID)
+		return s.OpenSessionByID(ctx, identity.UserID, deviceID)
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 
 	if data.Email == nil || *data.Email == "" || !data.EmailVerified {
-		return s.NewOAuthAccount(c, data)
+		return s.NewOAuthAccount(ctx, data, deviceID)
 	}
 
 	identity, err = s.Repository.Identity.Take(ctx, "email = ?", string(*data.Email))
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return s.NewOAuthAccount(c, data)
+		return s.NewOAuthAccount(ctx, data, deviceID)
 	}
 	if err != nil {
 		return nil, err
@@ -54,16 +51,7 @@ func (s *Service) TryOAuth2(c echo.Context, req dtoReq.Oauth2Request) (echo.Map,
 		return nil, err
 	}
 
-	return s.OpenSession(c, identity.UserID)
-}
-
-func (s *Service) OpenSession(c echo.Context, userID int64) (echo.Map, error) {
-	user, err := s.Repository.User.Take(c.Request().Context(), "id = ?", userID)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.TryAuthorize(c, user)
+	return s.OpenSessionByID(ctx, identity.UserID, deviceID)
 }
 
 func (s *Service) LinkIdentify(ctx context.Context, userID int64, data *oauth2.UserInfo) error {
@@ -93,9 +81,8 @@ func (s *Service) LinkIdentify(ctx context.Context, userID int64, data *oauth2.U
 	})
 }
 
-func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.Map, error) {
+func (s *Service) NewOAuthAccount(ctx context.Context, data *oauth2.UserInfo, deviceID string) (*Session, error) {
 	err := error(nil)
-	ctx := c.Request().Context()
 
 	user := &model.User{
 		Permission: "member",
@@ -106,7 +93,7 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 		return nil, err
 	}
 
-	avatarURL, err := s.SyncAvatar(c, user.Key.String(), data.AvatarURL)
+	avatarURL, err := s.SyncAvatar(ctx, user.Key.String(), data.AvatarURL)
 	if err != nil {
 		return nil, err
 	}
@@ -155,15 +142,15 @@ func (s *Service) NewOAuthAccount(c echo.Context, data *oauth2.UserInfo) (echo.M
 		return nil, err
 	}
 
-	return s.TryAuthorize(c, user)
+	return s.OpenSession(ctx, user, deviceID)
 }
 
-func (s *Service) SyncAvatar(c echo.Context, seed, sourceURL string) (*string, error) {
+func (s *Service) SyncAvatar(ctx context.Context, seed, sourceURL string) (*string, error) {
 	if sourceURL == "" {
 		return nil, nil
 	}
 
-	url, err := s.UploadAvatarFromURL(c.Request().Context(), seed, sourceURL)
+	url, err := s.UploadAvatarFromURL(ctx, seed, sourceURL)
 	if err != nil {
 		return nil, err
 	}

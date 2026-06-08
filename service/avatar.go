@@ -5,32 +5,22 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 
-	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/packages/uploader"
-	"github.com/labstack/echo/v4"
 )
 
-func (s *Service) UpdateAvatar(c echo.Context, file *multipart.FileHeader) (string, error) {
-	ctx := c.Request().Context()
-	if file == nil {
+func (s *Service) UpdateAvatar(ctx context.Context, userKey string, reader io.Reader, contentType, filename string) (string, error) {
+	if reader == nil {
 		return "", appError(http.StatusBadRequest, "file is required")
 	}
 
-	user, err := s.Repository.User.Take(ctx, "key = ?", middlewares.UserID(ctx))
+	user, err := s.Repository.User.Take(ctx, "key = ?", userKey)
 	if err != nil {
 		return "", err
 	}
 
-	src, err := file.Open()
-	if err != nil {
-		return "", appError(http.StatusBadRequest, "failed to open uploaded file")
-	}
-	defer src.Close()
-
-	url, err := s.UploadReader(ctx, user.Key.String(), src, file.Header.Get("Content-Type"), file.Filename)
+	url, err := s.UploadReader(ctx, user.Key.String(), reader, contentType, filename)
 	if err != nil {
 		return "", err
 	}
@@ -41,11 +31,6 @@ func (s *Service) UpdateAvatar(c echo.Context, file *multipart.FileHeader) (stri
 	}
 
 	return url, nil
-}
-
-func avatarFilename(seed string, file *multipart.FileHeader) string {
-	ext := fileExtFromContentType(file.Header.Get("Content-Type"), file.Filename)
-	return fmt.Sprintf("%s.%s", avatarHash(seed), ext)
 }
 
 func (s *Service) UploadAvatarFromURL(ctx context.Context, seed, imageURL string) (string, error) {

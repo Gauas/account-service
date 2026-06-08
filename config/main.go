@@ -14,6 +14,7 @@ type Cookie struct {
 }
 type Config struct {
 	Port      string
+	GRPCPort  string
 	DBUrl     string
 	SecretKey string
 
@@ -35,6 +36,7 @@ func fromEnv() *Config {
 
 	cfg := &Config{
 		Port:      get("PORT", "8080"),
+		GRPCPort:  get("GRPC_PORT", "9090"),
 		DBUrl:     mustEnv("DB_URL"),
 		SecretKey: mustEnv("SECRET_KEY"),
 
