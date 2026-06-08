@@ -3,7 +3,9 @@ package auth
 import (
 	"net/http"
 
+	"github.com/gauas/account-service/controller/session"
 	"github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/packages/httpresp"
 	"github.com/labstack/echo/v4"
 )
@@ -15,10 +17,11 @@ func (h *Handler) OAuth2(c echo.Context) error {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	data, err := h.Service.TryOAuth2(c, req)
+	sessionData, err := h.Service.TryOAuth2(c.Request().Context(), req, middlewares.DeviceID(c.Request().Context()))
 	if err != nil {
 		return err
 	}
 
-	return httpresp.OK(c, data)
+	session.Write(c, h.Config, sessionData)
+	return httpresp.OK(c, session.Response(sessionData))
 }

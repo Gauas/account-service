@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -12,16 +11,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/model"
-	response "github.com/gauas/account-service/packages/httpresp"
-	"github.com/labstack/echo/v4"
+	"github.com/gauas/account-service/packages/httpresp"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 func appError(code int, msg string) error {
-	return response.NewError(code, msg)
+	return httpresp.NewError(code, msg)
 }
 
 func hashPassword(password string) (string, error) {
@@ -36,34 +32,19 @@ func hashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-func (s *Service) TryAuthorize(c echo.Context, user *model.User) (echo.Map, error) {
-	tokens, err := s.Infra.AuthSDK.CreateToken(c.Request().Context(), user.Key, user.Permission, middlewares.DeviceID(c.Request().Context()))
+func (s *Service) OpenSession(ctx context.Context, user *model.User, deviceID string) (*Session, error) {
+	tokens, err := s.Infra.AuthSDK.CreateToken(ctx, user.Key, user.Permission, deviceID)
 	if err != nil {
 		return nil, err
 	}
 
-	s.SetCookie(c, "access_token", tokens.AccessToken, time.Until(tokens.ExpiresAt))
-	s.SetCookie(c, "refresh_token", tokens.RefreshToken, time.Until(tokens.RefreshExpiresAt))
-
-	return echo.Map{
-		"access_token":  tokens.AccessToken,
-		"refresh_token": tokens.RefreshToken,
-		"expires_in":    tokens.ExpiresIn,
+	return &Session{
+		AccessToken:      tokens.AccessToken,
+		RefreshToken:     tokens.RefreshToken,
+		ExpiresIn:        tokens.ExpiresIn,
+		ExpiresAt:        tokens.ExpiresAt,
+		RefreshExpiresAt: tokens.RefreshExpiresAt,
 	}, nil
-}
-
-func (s *Service) SetCookie(c echo.Context, name string, value string, ttl time.Duration) {
-	http.SetCookie(c.Response().Writer, &http.Cookie{
-		Name:     name,
-		Value:    value,
-		Path:     "/",
-		Domain:   s.Config.Cookie.DomainName,
-		Secure:   s.Config.Cookie.Secure,
-		HttpOnly: s.Config.Cookie.HttpOnly,
-		SameSite: s.Config.Cookie.SameSite,
-		MaxAge:   int(ttl.Seconds()),
-		Expires:  time.Now().Add(ttl),
-	})
 }
 
 func avatarHash(username string) string {
@@ -128,16 +109,4 @@ func isGenericContentType(ct string) bool {
 		return true
 	}
 	return ct == "application/octet-stream"
-}
-
-func (s *Service) CurrentUser(ctx context.Context) (*model.User, error) {
-	user, err := s.Repository.User.Take(ctx, "key = ?", middlewares.UserID(ctx))
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, appError(http.StatusUnauthorized, "unauthorized")
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
 }

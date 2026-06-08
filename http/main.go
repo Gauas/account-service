@@ -1,10 +1,12 @@
-package kernel
+package http
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gauas/account-service/config"
 	"github.com/gauas/account-service/controller"
@@ -14,17 +16,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Kernel struct {
+type Server struct {
 	controller *controller.Controller
 	middleware *middlewares.Middleware
 	config     config.Config
 }
 
-func New(ctrl *controller.Controller, mw *middlewares.Middleware, cfg *config.Config) *Kernel {
-	return &Kernel{controller: ctrl, middleware: mw, config: *cfg}
+func Register(ctrl *controller.Controller, mw *middlewares.Middleware, cfg *config.Config) *Server {
+	return &Server{controller: ctrl, middleware: mw, config: *cfg}
 }
 
-func (k *Kernel) Start() {
+func (s *Server) Start(ctx context.Context) error {
 	server := echo.New()
 	server.HideBanner = true
 	server.HTTPErrorHandler = func(err error, c echo.Context) {
@@ -44,14 +46,26 @@ func (k *Kernel) Start() {
 		_ = c.JSON(http.StatusInternalServerError, httpresp.Response{Status: http.StatusInternalServerError, Error: "internal server error"})
 	}
 
-	k.middleware.RegisterGlobal(server)
+	s.middleware.RegisterGlobal(server)
 
-	route.New(server, k.controller, k.middleware).RegisterRoutes() // <----
+	route.New(server, s.controller, s.middleware).RegisterRoutes()
 
-	addr := fmt.Sprintf(":%s", k.config.Port)
-	log.Printf("account-service listening on %s", addr)
+	addr := fmt.Sprintf(":%s", s.config.Port)
 
-	if err := server.Start(addr); err != nil && err != http.ErrServerClosed {
-		log.Fatal(err)
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("account-service http shutdown error: %v", err)
+		}
+	}()
+
+	log.Printf("account-service http listening on %s", addr)
+	if err := server.Start(addr); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("http server: %w", err)
 	}
+
+	return nil
 }

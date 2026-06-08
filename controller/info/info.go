@@ -14,7 +14,7 @@ func (h *Handler) Get(c echo.Context) error {
 		key = middlewares.UserID(c.Request().Context())
 	}
 
-	user, err := h.Service.GetInfo(c, key)
+	user, err := h.Service.GetInfoByKey(c.Request().Context(), key)
 	if err != nil {
 		return err
 	}

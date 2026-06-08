@@ -18,7 +18,7 @@ type User struct {
 	Permission string `gorm:"size:50;index" json:"permission"`
 
 	FullName  *string `gorm:"size:255" json:"full_name"`
-	AvatarURL *string `gorm:"size:500" json:"avatar_url" default:"'https://cdn.gauas.com/images/avatar/default_image.jpg'"`
+	AvatarURL *string `gorm:"size:500" json:"avatar_url" default:"'https://cdn.gauas.com/gauas/images/avatar/default_image.jpg'"`
 
 	Dob    *time.Time    `json:"dob"`
 	Gender *types.Gender `gorm:"size:50" json:"gender"`

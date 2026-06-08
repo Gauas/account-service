@@ -12,14 +12,11 @@ import (
 	"github.com/gauas/account-service/model/types"
 	"github.com/gauas/account-service/packages/mfa"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
-func (s *Service) GenerateTOTP(c echo.Context) (*response.TOTPSetupResponse, error) {
-	ctx := c.Request().Context()
-
-	user, err := s.CurrentUser(ctx)
+func (s *Service) GenerateTOTP(ctx context.Context, userKey string) (*response.TOTPSetupResponse, error) {
+	user, err := s.GetInfoByKey(ctx, userKey)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +48,8 @@ func (s *Service) GenerateTOTP(c echo.Context) (*response.TOTPSetupResponse, err
 	}, nil
 }
 
-func (s *Service) EnableTOTP(c echo.Context, req request.EnableTOTPRequest) error {
-	ctx := c.Request().Context()
-
-	user, err := s.CurrentUser(ctx)
+func (s *Service) EnableTOTP(ctx context.Context, userKey string, req request.EnableTOTPRequest) error {
+	user, err := s.GetInfoByKey(ctx, userKey)
 	if err != nil {
 		return err
 	}
@@ -83,10 +78,8 @@ func (s *Service) EnableTOTP(c echo.Context, req request.EnableTOTPRequest) erro
 	return s.Repository.MFA.Update(ctx, totp)
 }
 
-func (s *Service) VerifyTOTP(c echo.Context, req request.VerifyTOTPRequest) (echo.Map, error) {
-	ctx := c.Request().Context()
-
-	user, err := s.CurrentUser(ctx)
+func (s *Service) VerifyTOTP(ctx context.Context, userKey string, req request.VerifyTOTPRequest, deviceID string) (*Session, error) {
+	user, err := s.GetInfoByKey(ctx, userKey)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +98,7 @@ func (s *Service) VerifyTOTP(c echo.Context, req request.VerifyTOTPRequest) (ech
 		return nil, appError(http.StatusBadRequest, "invalid otp_code")
 	}
 
-	return s.TryAuthorize(c, user)
+	return s.OpenSession(ctx, user, deviceID)
 }
 
 func (s *Service) getTOTP(ctx context.Context, userID int64) (*model.MFA, error) {
