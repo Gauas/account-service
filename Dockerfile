@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -trimpath -ldflags="-s -w" -o app ./cmd
+    go build -trimpath -ldflags="-s -w" -o account-service .
 
 FROM alpine:3.21
 
@@ -19,10 +19,10 @@ RUN apk add --no-cache ca-certificates tzdata && \
 
 WORKDIR /app
 
-COPY --from=builder /build/app .
+COPY --from=builder /build/account-service .
 
 USER app
 
-EXPOSE 8080
+EXPOSE 8080 9090
 
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["./account-service"]

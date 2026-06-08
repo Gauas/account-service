@@ -5,17 +5,15 @@ import (
 	"errors"
 	"net/http"
 
-	dtoReq "github.com/gauas/account-service/dto/request"
+	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
-func (s *Service) NewAccount(c echo.Context, req dtoReq.RegisterRequest) (echo.Map, error) {
+func (s *Service) NewAccount(ctx context.Context, req request.RegisterRequest, deviceID string) (*Session, error) {
 	err := error(nil)
-	ctx := c.Request().Context()
 	email := req.Email.Normalize()
 
 	if err = email.Validate(); err != nil {
@@ -88,10 +86,19 @@ func (s *Service) NewAccount(c echo.Context, req dtoReq.RegisterRequest) (echo.M
 	}
 
 	if userID != int64(0) {
-		return s.OpenSession(c, userID)
+		return s.OpenSessionByID(ctx, userID, deviceID)
 	}
 
-	return s.TryAuthorize(c, user)
+	return s.OpenSession(ctx, user, deviceID)
+}
+
+func (s *Service) OpenSessionByID(ctx context.Context, userID int64, deviceID string) (*Session, error) {
+	user, err := s.Repository.User.Take(ctx, "id = ?", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.OpenSession(ctx, user, deviceID)
 }
 
 func (s *Service) SaveAccount(ctx context.Context, user *model.User, identity *model.Identity, verification *model.Verification) error {
