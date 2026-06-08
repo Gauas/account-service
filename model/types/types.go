@@ -3,11 +3,16 @@ package types
 import (
 	"errors"
 	"slices"
+	"strings"
 
 	"github.com/gauas/account-service/supports"
 )
 
 type Email string
+
+func (e Email) Normalize() Email {
+	return Email(strings.ToLower(strings.TrimSpace(string(e))))
+}
 
 func (e Email) Validate() error {
 	if e == "" {
