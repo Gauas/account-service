@@ -12,9 +12,9 @@ type MFA struct {
 	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
 
 	User   User  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
-	UserID int64 `gorm:"type:bigint;index" json:"-"`
+	UserID int64 `gorm:"type:bigint;not null;uniqueIndex:idx_mfas_user_type" json:"-"`
 
-	Type types.MFAType `gorm:"size:30;index" json:"type,omitempty"`
+	Type types.MFAType `gorm:"size:30;not null;uniqueIndex:idx_mfas_user_type" json:"type,omitempty"`
 
 	Secret  *string `gorm:"size:255" json:"secret,omitempty"`
 	Enabled bool    `gorm:"default:false" json:"enabled,omitempty"`
