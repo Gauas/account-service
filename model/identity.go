@@ -12,10 +12,10 @@ type Identity struct {
 	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
 
 	User   User  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
-	UserID int64 `gorm:"type:bigint;index;not null" json:"-"`
+	UserID int64 `gorm:"type:bigint;index;not null;uniqueIndex:idx_identities_user_provider" json:"-"`
 
-	Provider       types.IdentityProvider `gorm:"size:50;index;not null" json:"provider,omitempty"`
-	ProviderUserID string                 `gorm:"size:255;index;not null" json:"-"`
+	Provider       types.IdentityProvider `gorm:"size:50;index;not null;uniqueIndex:idx_identities_provider_user;uniqueIndex:idx_identities_user_provider" json:"provider,omitempty"`
+	ProviderUserID string                 `gorm:"size:255;index;not null;uniqueIndex:idx_identities_provider_user" json:"-"`
 
 	Email *types.Email `gorm:"size:255" json:"email,omitempty"`
 	Phone *string      `gorm:"size:20" json:"phone,omitempty"`

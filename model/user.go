@@ -34,6 +34,10 @@ type User struct {
 	MFAs          []MFA          `gorm:"foreignKey:UserID;references:ID" json:"-"`
 }
 
+func (User) TableName() string {
+	return "users"
+}
+
 func (u *User) AfterFind(_ *gorm.DB) error {
 	u.IsOnboarded = u.HasCompletedProfile()
 	return nil
