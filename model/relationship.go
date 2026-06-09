@@ -19,10 +19,10 @@ type Relationship struct {
 	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
 
 	Actor   User  `gorm:"foreignKey:ActorID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
-	ActorID int64 `gorm:"type:bigint;not null;index;uniqueIndex:idx_relationships_actor_partner" json:"-"`
+	ActorID int64 `gorm:"type:bigint;not null;index" json:"-"`
 
 	Partner   User  `gorm:"foreignKey:PartnerID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
-	PartnerID int64 `gorm:"type:bigint;not null;index;uniqueIndex:idx_relationships_actor_partner" json:"-"`
+	PartnerID int64 `gorm:"type:bigint;not null;index" json:"-"`
 
 	Status RelationshipStatus `gorm:"type:varchar(20);not null;default:'pending';index" json:"status"`
 
