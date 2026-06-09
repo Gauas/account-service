@@ -16,7 +16,7 @@ import (
 )
 
 func (s *Service) GenerateTOTP(ctx context.Context, userKey string) (*response.TOTPSetupResponse, error) {
-	user, err := s.GetInfoByKey(ctx, userKey)
+	user, err := s.GetProfileByKey(ctx, userKey)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (s *Service) GenerateTOTP(ctx context.Context, userKey string) (*response.T
 }
 
 func (s *Service) EnableTOTP(ctx context.Context, userKey string, req request.EnableTOTPRequest) error {
-	user, err := s.GetInfoByKey(ctx, userKey)
+	user, err := s.GetProfileByKey(ctx, userKey)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (s *Service) EnableTOTP(ctx context.Context, userKey string, req request.En
 }
 
 func (s *Service) VerifyTOTP(ctx context.Context, userKey string, req request.VerifyTOTPRequest, deviceID string) (*Session, error) {
-	user, err := s.GetInfoByKey(ctx, userKey)
+	user, err := s.GetProfileByKey(ctx, userKey)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package info
+package profile
 
 import (
 	"net/http"
@@ -16,7 +16,7 @@ func (h *Handler) Update(c echo.Context) error {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	err := h.Service.UpdateInfo(c.Request().Context(), middlewares.UserID(c.Request().Context()), req)
+	err := h.Service.UpdateProfile(c.Request().Context(), middlewares.UserID(c.Request().Context()), req)
 	if err != nil {
 		return err
 	}

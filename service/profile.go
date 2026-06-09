@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *Service) UpdateInfo(ctx context.Context, userKey string, req request.UpdateProfileRequest) error {
+func (s *Service) UpdateProfile(ctx context.Context, userKey string, req request.UpdateProfileRequest) error {
 	user, err := s.Repository.User.Take(ctx, "key = ?", userKey)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (s *Service) UpdateInfo(ctx context.Context, userKey string, req request.Up
 	return nil
 }
 
-func (s *Service) GetInfoByKey(ctx context.Context, key string) (*model.User, error) {
+func (s *Service) GetProfileByKey(ctx context.Context, key string) (*model.User, error) {
 	if key == "" {
 		return nil, appError(http.StatusBadRequest, "key is required")
 	}

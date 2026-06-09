@@ -44,7 +44,7 @@ func (a *Action) GetUserInfo(ctx context.Context, request *dynamicpb.Message) (*
 		key = currentUserKey
 	}
 
-	user, err := a.service.GetInfoByKey(ctx, key)
+	user, err := a.service.GetProfileByKey(ctx, key)
 	if err != nil {
 		return nil, toStatusError(err)
 	}

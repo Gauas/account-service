@@ -11,6 +11,7 @@ type Registry struct {
 	Verification Repository[model.Verification]
 	MFA          Repository[model.MFA]
 	Identity     Repository[model.Identity]
+	Relationship Repository[model.Relationship]
 }
 
 func New(db *gorm.DB) *Registry {
@@ -20,6 +21,7 @@ func New(db *gorm.DB) *Registry {
 		Verification: Repository[model.Verification]{db: db},
 		MFA:          Repository[model.MFA]{db: db},
 		Identity:     Repository[model.Identity]{db: db},
+		Relationship: Repository[model.Relationship]{db: db},
 	}
 }
 
