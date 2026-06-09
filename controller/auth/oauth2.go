@@ -3,10 +3,10 @@ package auth
 import (
 	"net/http"
 
-	"github.com/gauas/account-service/controller/session"
 	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/middlewares"
 	"github.com/gauas/account-service/packages/httpresp"
+	"github.com/gauas/account-service/packages/session"
 	"github.com/labstack/echo/v4"
 )
 
