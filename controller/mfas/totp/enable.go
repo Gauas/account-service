@@ -10,12 +10,16 @@ import (
 )
 
 func (h *Handler) Enable(c echo.Context) error {
-	var req request.EnableTOTPRequest
+	var req request.EnableTOTP
 	if err := c.Bind(&req); err != nil {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request body")
 	}
 
-	if err := h.Service.EnableTOTP(c.Request().Context(), middlewares.UserID(c.Request().Context()), req); err != nil {
+	if err := req.Validate(); err != nil {
+		return httpresp.NewError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := h.Service.EnableTOTP(c.Request().Context(), middlewares.UserID(c.Request().Context()), req.OTPCode); err != nil {
 		return err
 	}
 

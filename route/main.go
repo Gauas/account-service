@@ -47,14 +47,14 @@ func (r *Router) RegisterRoutes() {
 		profile.PATCH("/avatar", r.Controller.Profile.UpdateAvatar)
 	}
 
-	relationships := private.Group("/relationships")
-	{
-		relationships.GET("", r.Controller.Relationship.List)
-		relationships.POST("", r.Controller.Relationship.Request)
-		relationships.POST("/accept", r.Controller.Relationship.Accept)
-		relationships.POST("/decline", r.Controller.Relationship.Decline)
-		relationships.DELETE("", r.Controller.Relationship.Cancel)
-	}
+	//relationships := private.Group("/relationships")
+	//{
+	//	relationships.GET("", r.Controller.Relationship.List)
+	//	relationships.POST("", r.Controller.Relationship.Request)
+	//	relationships.POST("/accept", r.Controller.Relationship.Accept)
+	//	relationships.POST("/decline", r.Controller.Relationship.Decline)
+	//	relationships.DELETE("", r.Controller.Relationship.Cancel)
+	//}
 
 	mfa := private.Group("/mfa")
 	{

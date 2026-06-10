@@ -5,32 +5,23 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func (s *Service) NewAccount(ctx context.Context, req request.RegisterRequest, deviceID string) (*Session, error) {
+func (s *Service) NewAccount(ctx context.Context, email types.Email, password string, fullName string, deviceID string) (*Session, error) {
 	err := error(nil)
-	email := req.Email.Normalize()
-
-	if err = email.Validate(); err != nil {
-		return nil, appError(http.StatusBadRequest, err.Error())
-	}
+	email = email.Normalize()
 
 	user := &model.User{
 		Permission: "member",
-		FullName:   &req.FullName,
+		FullName:   &fullName,
 	}
 
 	if user.Key, err = uuid.NewV7(); err != nil {
 		return nil, err
-	}
-
-	if email == "" {
-		return nil, appError(http.StatusBadRequest, "email is required")
 	}
 
 	identity := &model.Identity{
@@ -52,11 +43,7 @@ func (s *Service) NewAccount(ctx context.Context, req request.RegisterRequest, d
 		return nil, err
 	}
 
-	if req.Password == "" {
-		return nil, appError(http.StatusBadRequest, "password is required")
-	}
-
-	hash, err := hashPassword(req.Password)
+	hash, err := hashPassword(password)
 	if err != nil {
 		return nil, err
 	}

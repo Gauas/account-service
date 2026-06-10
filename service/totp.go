@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/dto/response"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
@@ -30,12 +29,14 @@ func (s *Service) GenerateTOTP(ctx context.Context, userKey string) (*response.T
 	}
 
 	account := mfa.AccountName(user.Key.String())
+
 	secret, qrURL, err := mfa.BuildKey(account)
+
 	if err != nil {
 		return nil, appError(http.StatusInternalServerError, "failed to generate totp key")
 	}
 
-	if err := s.upsertTOTP(ctx, user.ID, secret); err != nil {
+	if _, err := s.upsertTOTP(ctx, user.ID, secret); err != nil {
 		return nil, err
 	}
 
@@ -48,26 +49,26 @@ func (s *Service) GenerateTOTP(ctx context.Context, userKey string) (*response.T
 	}, nil
 }
 
-func (s *Service) EnableTOTP(ctx context.Context, userKey string, req request.EnableTOTPRequest) error {
+func (s *Service) EnableTOTP(ctx context.Context, userKey string, otpCode string) error {
 	user, err := s.GetProfileByKey(ctx, userKey)
 	if err != nil {
 		return err
-	}
-	if req.OTPCode == "" {
-		return appError(http.StatusBadRequest, "otp_code is required")
 	}
 
 	totp, err := s.getTOTP(ctx, user.ID)
 	if err != nil {
 		return err
 	}
+
 	if totp == nil || totp.Secret == nil {
 		return appError(http.StatusBadRequest, "no totp setup found")
 	}
+
 	if totp.Enabled {
 		return appError(http.StatusConflict, "totp already enabled")
 	}
-	if !mfa.Verify(req.OTPCode, *totp.Secret, time.Now().UTC()) {
+
+	if !mfa.Verify(otpCode, *totp.Secret, time.Now().UTC()) {
 		return appError(http.StatusBadRequest, "invalid otp_code")
 	}
 
@@ -78,13 +79,10 @@ func (s *Service) EnableTOTP(ctx context.Context, userKey string, req request.En
 	return s.Repository.MFA.Update(ctx, totp)
 }
 
-func (s *Service) VerifyTOTP(ctx context.Context, userKey string, req request.VerifyTOTPRequest, deviceID string) (*Session, error) {
+func (s *Service) VerifyTOTP(ctx context.Context, userKey string, otpCode string, deviceID string) (*Session, error) {
 	user, err := s.GetProfileByKey(ctx, userKey)
 	if err != nil {
 		return nil, err
-	}
-	if req.OTPCode == "" {
-		return nil, appError(http.StatusBadRequest, "otp_code is required")
 	}
 
 	totp, err := s.getTOTP(ctx, user.ID)
@@ -94,7 +92,7 @@ func (s *Service) VerifyTOTP(ctx context.Context, userKey string, req request.Ve
 	if totp == nil || totp.Secret == nil || !totp.Enabled {
 		return nil, appError(http.StatusBadRequest, "totp is not enabled")
 	}
-	if !mfa.Verify(req.OTPCode, *totp.Secret, time.Now().UTC()) {
+	if !mfa.Verify(otpCode, *totp.Secret, time.Now().UTC()) {
 		return nil, appError(http.StatusBadRequest, "invalid otp_code")
 	}
 
@@ -113,37 +111,46 @@ func (s *Service) getTOTP(ctx context.Context, userID int64) (*model.MFA, error)
 	return totp, nil
 }
 
-func (s *Service) upsertTOTP(ctx context.Context, userID int64, secret string) error {
+func (s *Service) upsertTOTP(ctx context.Context, userID int64, secret string) (*model.MFA, error) {
 	mfa, err := s.getTOTP(ctx, userID)
+
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	if mfa == nil {
 		return s.createTOTP(ctx, userID, secret)
 	}
+
 	if mfa.Enabled {
-		return appError(http.StatusConflict, "totp already enabled")
+		return nil, appError(http.StatusConflict, "totp already enabled")
 	}
 
 	mfa.Secret = &secret
-	return s.Repository.MFA.Update(ctx, mfa)
-}
-
-func (s *Service) createTOTP(ctx context.Context, userID int64, secret string) error {
-	key, err := uuid.NewV7()
-	if err != nil {
-		return err
+	if err := s.Repository.MFA.Update(ctx, mfa); err != nil {
+		return nil, err
 	}
 
-	_, err = s.Repository.MFA.Create(ctx, &model.MFA{
+	return mfa, nil
+}
+
+func (s *Service) createTOTP(ctx context.Context, userID int64, secret string) (*model.MFA, error) {
+	key, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	totp := &model.MFA{
 		Key:    key,
 		UserID: userID,
 		Type:   types.MFATypeTOTP,
 		Secret: &secret,
-	})
-	if err != nil {
-		return err
 	}
 
-	return nil
+	_, err = s.Repository.MFA.Create(ctx, totp)
+	if err != nil {
+		return nil, err
+	}
+
+	return totp, nil
 }

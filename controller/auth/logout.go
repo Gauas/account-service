@@ -14,5 +14,6 @@ func (h *Handler) Logout(c echo.Context) error {
 	}
 
 	session.Clear(c, h.Config)
+
 	return httpresp.OK(c, "logged out successfully")
 }

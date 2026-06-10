@@ -11,16 +11,21 @@ import (
 )
 
 func (h *Handler) Register(c echo.Context) error {
-	var req request.RegisterRequest
+	var req request.Register
 	if err := c.Bind(&req); err != nil {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request body")
 	}
 
-	sessionData, err := h.Service.NewAccount(c.Request().Context(), req, middlewares.DeviceID(c.Request().Context()))
+	if err := req.Validate(); err != nil {
+		return httpresp.NewError(http.StatusBadRequest, err.Error())
+	}
+
+	sessionData, err := h.Service.NewAccount(c.Request().Context(), req.Email, req.Password, req.FullName, middlewares.DeviceID(c.Request().Context()))
 	if err != nil {
 		return err
 	}
 
 	session.Write(c, h.Config, sessionData)
+
 	return httpresp.OK(c, session.Response(sessionData))
 }
