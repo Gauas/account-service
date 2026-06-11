@@ -5,23 +5,20 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func (s *Service) TryOAuth2(ctx context.Context, req request.Oauth2Request, deviceID string) (*Session, error) {
-	provider, ok := oauth2.Providers[req.Provider]
-	if !ok {
-		return nil, appError(http.StatusBadRequest, "unsupported oauth2 provider")
-	}
+func (s *Service) TryOAuth2(ctx context.Context, providerName string, token string, deviceID string) (*Session, error) {
+	provider := oauth2.Providers[providerName]
+	data, err := provider.GetUser(token)
 
-	data, err := provider.GetUser(req.Token)
 	if err != nil {
 		return nil, err
 	}
+
 	if data.Email != nil {
 		email := data.Email.Normalize()
 		data.Email = &email
@@ -31,6 +28,7 @@ func (s *Service) TryOAuth2(ctx context.Context, req request.Oauth2Request, devi
 	if err == nil {
 		return s.OpenSessionByID(ctx, identity.UserID, deviceID)
 	}
+
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -43,6 +41,7 @@ func (s *Service) TryOAuth2(ctx context.Context, req request.Oauth2Request, devi
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return s.NewOAuthAccount(ctx, data, deviceID)
 	}
+	
 	if err != nil {
 		return nil, err
 	}

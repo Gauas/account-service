@@ -11,13 +11,17 @@ import (
 )
 
 func (h *Handler) Login(c echo.Context) error {
-	var req request.LoginRequest
+	var req request.Login
 
 	if err := c.Bind(&req); err != nil {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	sessionData, err := h.Service.Login(c.Request().Context(), req, middlewares.DeviceID(c.Request().Context()))
+	if err := req.Validate(); err != nil {
+		return httpresp.NewError(http.StatusBadRequest, err.Error())
+	}
+
+	sessionData, err := h.Service.Login(c.Request().Context(), req.Email, req.Password, middlewares.DeviceID(c.Request().Context()))
 	if err != nil {
 		return err
 	}

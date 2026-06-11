@@ -11,13 +11,17 @@ import (
 )
 
 func (h *Handler) OAuth2(c echo.Context) error {
-	var req request.Oauth2Request
+	var req request.OAuth2
 
 	if err := c.Bind(&req); err != nil {
 		return httpresp.NewError(http.StatusBadRequest, "invalid request")
 	}
 
-	sessionData, err := h.Service.TryOAuth2(c.Request().Context(), req, middlewares.DeviceID(c.Request().Context()))
+	if err := req.Validate(); err != nil {
+		return httpresp.NewError(http.StatusBadRequest, err.Error())
+	}
+
+	sessionData, err := h.Service.TryOAuth2(c.Request().Context(), req.Provider, req.Token, middlewares.DeviceID(c.Request().Context()))
 	if err != nil {
 		return err
 	}

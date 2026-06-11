@@ -4,21 +4,27 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
-	"github.com/gauas/account-service/dto/request"
 	"github.com/gauas/account-service/model"
-	"github.com/gauas/account-service/supports"
+	"github.com/gauas/account-service/model/types"
 	"gorm.io/gorm"
 )
 
-func (s *Service) UpdateProfile(ctx context.Context, userKey string, req request.UpdateProfileRequest) error {
+func (s *Service) UpdateProfile(ctx context.Context, userKey string, fullName *string, dob *time.Time, gender *types.Gender) error {
 	user, err := s.Repository.User.Take(ctx, "key = ?", userKey)
 	if err != nil {
 		return err
 	}
 
-	if err := supports.Fill(user, req); err != nil {
-		return err
+	if fullName != nil {
+		user.FullName = fullName
+	}
+	if dob != nil {
+		user.Dob = dob
+	}
+	if gender != nil {
+		user.Gender = gender
 	}
 
 	err = s.Repository.User.Update(ctx, user)

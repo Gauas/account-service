@@ -2,7 +2,7 @@ package response
 
 import "time"
 
-type RelationshipResponse struct {
+type Relationship struct {
 	Key       string          `json:"key"`
 	Status    string          `json:"status"`
 	Actor     ProfileResponse `json:"actor"`
