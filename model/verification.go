@@ -12,10 +12,11 @@ type Verification struct {
 	Key uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"key,omitempty"`
 
 	User   User  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
-	UserID int64 `gorm:"type:bigint;index;not null;uniqueIndex:idx_verifications_user_method_value" json:"-"`
+	UserID int64 `gorm:"type:bigint;index;not null;uniqueIndex:idx_verifications_user_method_target" json:"-"`
 
-	Method types.VerificationMethod `gorm:"size:20;index;not null;uniqueIndex:idx_verifications_user_method_value" json:"method,omitempty"`
-	Value  string                   `gorm:"size:255;not null;uniqueIndex:idx_verifications_user_method_value" json:"value,omitempty"`
+	Method types.VerificationMethod `gorm:"size:20;index;not null;uniqueIndex:idx_verifications_user_method_target" json:"type,omitempty"`
+	Target string                   `gorm:"size:255;not null;uniqueIndex:idx_verifications_user_method_target" json:"target,omitempty"`
+	Value  string                   `gorm:"size:6;not null" json:"value,omitempty"`
 
 	IsVerified bool       `gorm:"default:false" json:"is_verified,omitempty"`
 	VerifiedAt *time.Time `json:"verified_at,omitempty"`

@@ -34,15 +34,6 @@ func (s *Service) NewAccount(ctx context.Context, email types.Email, password st
 		return nil, err
 	}
 
-	ver := &model.Verification{
-		Method: types.EmailVerification,
-		Value:  string(email),
-	}
-
-	if ver.Key, err = uuid.NewV7(); err != nil {
-		return nil, err
-	}
-
 	hash, err := hashPassword(password)
 	if err != nil {
 		return nil, err
@@ -54,7 +45,7 @@ func (s *Service) NewAccount(ctx context.Context, email types.Email, password st
 	err = s.Repository.Transaction(ctx, func(ctx context.Context) error {
 		old, err := s.Repository.Identity.Take(ctx, "email = ?", string(email))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return s.SaveAccount(ctx, user, identity, ver)
+			return s.SaveAccount(ctx, user, identity)
 		}
 
 		if err != nil {
@@ -88,20 +79,18 @@ func (s *Service) OpenSessionByID(ctx context.Context, userID int64, deviceID st
 	return s.OpenSession(ctx, user, deviceID)
 }
 
-func (s *Service) SaveAccount(ctx context.Context, user *model.User, identity *model.Identity, verification *model.Verification) error {
+func (s *Service) SaveAccount(ctx context.Context, user *model.User, identity *model.Identity) error {
 	if _, err := s.Repository.User.Create(ctx, user); err != nil {
 		return err
 	}
 
 	identity.UserID = user.ID
-	verification.UserID = user.ID
 
 	if _, err := s.Repository.Identity.Create(ctx, identity); err != nil {
 		return err
 	}
 
-	_, err := s.Repository.Verification.Create(ctx, verification)
-	return err
+	return nil
 }
 
 func (s *Service) LinkAccount(ctx context.Context, userID int64, email types.Email, hash string) error {

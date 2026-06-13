@@ -62,4 +62,10 @@ func (r *Router) RegisterRoutes() {
 		mfa.POST("/totp/enable", r.Controller.TOTP.Enable)
 		mfa.POST("/totp/verify", r.Controller.TOTP.Verify)
 	}
+
+	verification := private.Group("/verification")
+	{
+		verification.POST("/generate", r.Controller.Verification.Generate)
+		verification.POST("/verify", r.Controller.Verification.Verify)
+	}
 }
