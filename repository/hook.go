@@ -67,9 +67,9 @@ func (r *Repository[T]) Pluck(ctx context.Context, column string, dest any) erro
 }
 
 func (r *Repository[T]) Exists(ctx context.Context, args ...interface{}) bool {
-	record := new(T)
+	var found int
 
-	err := r.Resolve(ctx).Select("1").Take(record, args...).Error
+	err := r.Resolve(ctx).Model(new(T)).Select("1").Take(&found, args...).Error
 	if err != nil {
 		return false
 	}
