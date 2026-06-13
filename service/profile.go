@@ -8,6 +8,7 @@ import (
 
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
+	"github.com/gauas/account-service/packages/httpresp"
 	"gorm.io/gorm"
 )
 
@@ -37,12 +38,12 @@ func (s *Service) UpdateProfile(ctx context.Context, userKey string, fullName *s
 
 func (s *Service) GetProfileByKey(ctx context.Context, key string) (*model.User, error) {
 	if key == "" {
-		return nil, appError(http.StatusBadRequest, "key is required")
+		return nil, httpresp.NewError(http.StatusBadRequest, "key is required")
 	}
 
 	user, err := s.Repository.User.Take(ctx, "key = ?", key)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, appError(http.StatusNotFound, "user not found")
+		return nil, httpresp.NewError(http.StatusNotFound, "user not found")
 	}
 	if err != nil {
 		return nil, err

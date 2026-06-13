@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gauas/account-service/model"
+	"github.com/gauas/account-service/packages/httpresp"
 	"github.com/gauas/account-service/supports/oauth2"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -69,7 +70,7 @@ func (s *Service) LinkIdentify(ctx context.Context, userID int64, data *oauth2.U
 
 	return s.Repository.Transaction(ctx, func(ctx context.Context) error {
 		if s.Repository.Identity.Exists(ctx, "user_id = ? AND provider = ?", userID, identity.Provider) {
-			return appError(http.StatusConflict, "account already linked with provider")
+			return httpresp.NewError(http.StatusConflict, "account already linked with provider")
 		}
 
 		if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {

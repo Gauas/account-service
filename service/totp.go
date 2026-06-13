@@ -9,6 +9,7 @@ import (
 	"github.com/gauas/account-service/dto/response"
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
+	"github.com/gauas/account-service/packages/httpresp"
 	"github.com/gauas/account-service/packages/mfa"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -25,7 +26,7 @@ func (s *Service) GenerateTOTP(ctx context.Context, userKey string) (*response.T
 		return nil, err
 	}
 	if identity.Email == nil || *identity.Email == "" {
-		return nil, appError(http.StatusBadRequest, "user has no email")
+		return nil, httpresp.NewError(http.StatusBadRequest, "user has no email")
 	}
 
 	account := mfa.AccountName(user.Key.String())
@@ -33,7 +34,7 @@ func (s *Service) GenerateTOTP(ctx context.Context, userKey string) (*response.T
 	secret, qrURL, err := mfa.BuildKey(account)
 
 	if err != nil {
-		return nil, appError(http.StatusInternalServerError, "failed to generate totp key")
+		return nil, httpresp.NewError(http.StatusInternalServerError, "failed to generate totp key")
 	}
 
 	if _, err := s.upsertTOTP(ctx, user.ID, secret); err != nil {
@@ -61,15 +62,15 @@ func (s *Service) EnableTOTP(ctx context.Context, userKey string, otpCode string
 	}
 
 	if totp == nil || totp.Secret == nil {
-		return appError(http.StatusBadRequest, "no totp setup found")
+		return httpresp.NewError(http.StatusBadRequest, "no totp setup found")
 	}
 
 	if totp.Enabled {
-		return appError(http.StatusConflict, "totp already enabled")
+		return httpresp.NewError(http.StatusConflict, "totp already enabled")
 	}
 
 	if !mfa.Verify(otpCode, *totp.Secret, time.Now().UTC()) {
-		return appError(http.StatusBadRequest, "invalid otp_code")
+		return httpresp.NewError(http.StatusBadRequest, "invalid otp_code")
 	}
 
 	now := time.Now().UTC()
@@ -90,10 +91,10 @@ func (s *Service) VerifyTOTP(ctx context.Context, userKey string, otpCode string
 		return nil, err
 	}
 	if totp == nil || totp.Secret == nil || !totp.Enabled {
-		return nil, appError(http.StatusBadRequest, "totp is not enabled")
+		return nil, httpresp.NewError(http.StatusBadRequest, "totp is not enabled")
 	}
 	if !mfa.Verify(otpCode, *totp.Secret, time.Now().UTC()) {
-		return nil, appError(http.StatusBadRequest, "invalid otp_code")
+		return nil, httpresp.NewError(http.StatusBadRequest, "invalid otp_code")
 	}
 
 	return s.OpenSession(ctx, user, deviceID)
@@ -123,7 +124,7 @@ func (s *Service) upsertTOTP(ctx context.Context, userID int64, secret string) (
 	}
 
 	if mfa.Enabled {
-		return nil, appError(http.StatusConflict, "totp already enabled")
+		return nil, httpresp.NewError(http.StatusConflict, "totp already enabled")
 	}
 
 	mfa.Secret = &secret
