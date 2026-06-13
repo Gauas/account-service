@@ -1,4 +1,4 @@
-package relationship
+package profile
 
 import (
 	"github.com/gauas/account-service/config"

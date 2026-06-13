@@ -1,4 +1,4 @@
-package info
+package verification
 
 import (
 	"github.com/gauas/account-service/config"

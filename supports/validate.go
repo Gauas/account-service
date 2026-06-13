@@ -7,9 +7,5 @@ var (
 	Phone = regexp.MustCompile(`^\d{10,15}$`)
 )
 
-func Match(s string, re *regexp.Regexp) bool {
-	return re.MatchString(s)
-}
-
-func IsEmail(s string) bool { return Match(s, Email) }
-func IsPhone(s string) bool { return Match(s, Phone) }
+func IsEmail(s string) bool { return Email.MatchString(s) }
+func IsPhone(s string) bool { return Phone.MatchString(s) }

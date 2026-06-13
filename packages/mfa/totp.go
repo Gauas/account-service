@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"image/png"
+	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/pquerna/otp"
@@ -30,6 +32,24 @@ func BuildKey(account string) (string, string, error) {
 	}
 
 	return key.Secret(), key.URL(), nil
+}
+
+func KeyURL(account, secret string) string {
+	keyURL := url.URL{
+		Scheme: "otpauth",
+		Host:   "totp",
+		Path:   "/" + url.PathEscape(fmt.Sprintf("%s:%s", ISSUER, account)),
+	}
+
+	query := keyURL.Query()
+	query.Set("algorithm", "SHA1")
+	query.Set("digits", strconv.Itoa(int(TOTP_DIGITS.Length())))
+	query.Set("issuer", ISSUER)
+	query.Set("period", strconv.Itoa(TOTP_PERIOD))
+	query.Set("secret", secret)
+	keyURL.RawQuery = query.Encode()
+
+	return keyURL.String()
 }
 
 func BuildEnrollment(account string) (string, string, []byte, error) {

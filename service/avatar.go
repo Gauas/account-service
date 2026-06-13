@@ -5,16 +5,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 
 	"github.com/gauas/account-service/packages/uploader"
 )
 
 func (s *Service) UpdateAvatar(ctx context.Context, userKey string, reader io.Reader, contentType, filename string) (string, error) {
-	if reader == nil {
-		return "", appError(http.StatusBadRequest, "file is required")
-	}
-
 	user, err := s.Repository.User.Take(ctx, "key = ?", userKey)
 	if err != nil {
 		return "", err
@@ -34,10 +29,6 @@ func (s *Service) UpdateAvatar(ctx context.Context, userKey string, reader io.Re
 }
 
 func (s *Service) UploadAvatarFromURL(ctx context.Context, seed, imageURL string) (string, error) {
-	if imageURL == "" {
-		return "", appError(http.StatusBadRequest, "image_url is required")
-	}
-
 	data, contentType, err := downloadImage(imageURL)
 	if err != nil {
 		return "", err

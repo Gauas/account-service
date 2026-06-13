@@ -40,17 +40,32 @@ func (r *Router) RegisterRoutes() {
 		private.POST("/logout", r.Controller.Authentication.Logout)
 	}
 
-	info := private.Group("/info")
+	profile := private.Group("/profile")
 	{
-		info.GET("", r.Controller.Info.Get)
-		info.PUT("", r.Controller.Info.Update)
-		info.PATCH("/avatar", r.Controller.Info.UpdateAvatar)
+		profile.GET("", r.Controller.Profile.Get)
+		profile.PUT("", r.Controller.Profile.Update)
+		profile.PATCH("/avatar", r.Controller.Profile.UpdateAvatar)
 	}
+
+	//relationships := private.Group("/relationships")
+	//{
+	//	relationships.GET("", r.Controller.Relationship.List)
+	//	relationships.POST("", r.Controller.Relationship.Request)
+	//	relationships.POST("/accept", r.Controller.Relationship.Accept)
+	//	relationships.POST("/decline", r.Controller.Relationship.Decline)
+	//	relationships.DELETE("", r.Controller.Relationship.Cancel)
+	//}
 
 	mfa := private.Group("/mfa")
 	{
 		mfa.GET("/totp/qr", r.Controller.TOTP.Generate)
 		mfa.POST("/totp/enable", r.Controller.TOTP.Enable)
 		mfa.POST("/totp/verify", r.Controller.TOTP.Verify)
+	}
+
+	verification := private.Group("/verification")
+	{
+		verification.POST("/generate", r.Controller.Verification.Generate)
+		verification.POST("/verify", r.Controller.Verification.Verify)
 	}
 }
