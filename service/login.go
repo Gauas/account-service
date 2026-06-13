@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gauas/account-service/model/types"
+	"github.com/gauas/account-service/packages/httpresp"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ func (s *Service) Login(ctx context.Context, email types.Email, password string,
 
 	identity, err := s.Repository.Identity.Take(ctx, "provider = ? AND email = ?", types.EmailIdentityProvider, string(email))
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, appError(http.StatusUnauthorized, "unauthorized")
+		return nil, httpresp.NewError(http.StatusUnauthorized, "unauthorized")
 	}
 
 	if err != nil {
@@ -23,7 +24,7 @@ func (s *Service) Login(ctx context.Context, email types.Email, password string,
 	}
 
 	if identity.Hash == nil || bcrypt.CompareHashAndPassword([]byte(*identity.Hash), []byte(password)) != nil {
-		return nil, appError(http.StatusUnauthorized, "unauthorized")
+		return nil, httpresp.NewError(http.StatusUnauthorized, "unauthorized")
 	}
 
 	user, err := s.Repository.User.Take(ctx, "id = ?", identity.UserID)

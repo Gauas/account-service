@@ -7,6 +7,7 @@ import (
 
 	"github.com/gauas/account-service/model"
 	"github.com/gauas/account-service/model/types"
+	"github.com/gauas/account-service/packages/httpresp"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -53,7 +54,7 @@ func (s *Service) NewAccount(ctx context.Context, email types.Email, password st
 		}
 
 		if old.Provider == types.EmailIdentityProvider {
-			return appError(http.StatusConflict, "account already exists")
+			return httpresp.NewError(http.StatusConflict, "account already exists")
 		}
 
 		userID = old.UserID
@@ -100,7 +101,7 @@ func (s *Service) LinkAccount(ctx context.Context, userID int64, email types.Ema
 	}
 
 	if s.Repository.Identity.Exists(ctx, "user_id = ? AND provider = ?", userID, types.EmailIdentityProvider) {
-		return appError(http.StatusConflict, "account already linked with email")
+		return httpresp.NewError(http.StatusConflict, "account already linked with email")
 	}
 
 	_, err = s.Repository.Identity.Create(ctx, &model.Identity{

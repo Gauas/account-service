@@ -75,10 +75,10 @@ import (
 //	}
 //
 //	if relationship.PartnerID != user.ID || relationship.ActorID != actor.ID {
-//		return nil, appError(http.StatusForbidden, "only the requested user can accept this relationship")
+//		return nil, httpresp.NewError(http.StatusForbidden, "only the requested user can accept this relationship")
 //	}
 //	if relationship.Status != model.RelationshipStatusPending {
-//		return nil, appError(http.StatusConflict, "relationship is not pending")
+//		return nil, httpresp.NewError(http.StatusConflict, "relationship is not pending")
 //	}
 //
 //	relationship.Status = model.RelationshipStatusActive
@@ -105,10 +105,10 @@ import (
 //	}
 //
 //	if relationship.PartnerID != user.ID || relationship.ActorID != actor.ID {
-//		return appError(http.StatusForbidden, "only the requested user can decline this relationship")
+//		return httpresp.NewError(http.StatusForbidden, "only the requested user can decline this relationship")
 //	}
 //	if relationship.Status != model.RelationshipStatusPending {
-//		return appError(http.StatusConflict, "relationship is not pending")
+//		return httpresp.NewError(http.StatusConflict, "relationship is not pending")
 //	}
 //
 //	return s.Repository.Relationship.Delete(ctx, "id = ?", relationship.ID)
@@ -121,10 +121,10 @@ import (
 //	}
 //
 //	if relationship.ActorID != user.ID || relationship.PartnerID != partner.ID {
-//		return appError(http.StatusForbidden, "only the requesting user can cancel this relationship")
+//		return httpresp.NewError(http.StatusForbidden, "only the requesting user can cancel this relationship")
 //	}
 //	if relationship.Status != model.RelationshipStatusPending {
-//		return appError(http.StatusConflict, "only pending relationships can be cancelled")
+//		return httpresp.NewError(http.StatusConflict, "only pending relationships can be cancelled")
 //	}
 //
 //	return s.Repository.Relationship.Delete(ctx, "id = ?", relationship.ID)
@@ -132,7 +132,7 @@ import (
 //
 //func (s *Service) relationshipUserPair(ctx context.Context, userKey string, targetUserKey string) (*model.User, *model.User, error) {
 //	if strings.TrimSpace(userKey) == "" {
-//		return nil, nil, appError(http.StatusUnauthorized, "unauthorized")
+//		return nil, nil, httpresp.NewError(http.StatusUnauthorized, "unauthorized")
 //	}
 //
 //	user, err := s.GetProfileByKey(ctx, userKey)
@@ -145,7 +145,7 @@ import (
 //		return nil, nil, err
 //	}
 //	if user.ID == target.ID {
-//		return nil, nil, appError(http.StatusBadRequest, "cannot create relationship with yourself")
+//		return nil, nil, httpresp.NewError(http.StatusBadRequest, "cannot create relationship with yourself")
 //	}
 //
 //	return user, target, nil
@@ -159,7 +159,7 @@ import (
 //
 //	relationship, err := s.findRelationshipBetween(ctx, user.ID, target.ID)
 //	if errors.Is(err, gorm.ErrRecordNotFound) {
-//		return nil, nil, nil, appError(http.StatusNotFound, "relationship not found")
+//		return nil, nil, nil, httpresp.NewError(http.StatusNotFound, "relationship not found")
 //	}
 //	if err != nil {
 //		return nil, nil, nil, err
@@ -175,7 +175,7 @@ import (
 //		Preload("Partner").
 //		Take(&relationship, "id = ?", id).Error
 //	if errors.Is(err, gorm.ErrRecordNotFound) {
-//		return nil, appError(http.StatusNotFound, "relationship not found")
+//		return nil, httpresp.NewError(http.StatusNotFound, "relationship not found")
 //	}
 //	if err != nil {
 //		return nil, err
@@ -198,11 +198,11 @@ import (
 //func relationshipConflict(relationship *model.Relationship) error {
 //	switch relationship.Status {
 //	case model.RelationshipStatusActive:
-//		return appError(http.StatusConflict, "relationship already exists")
+//		return httpresp.NewError(http.StatusConflict, "relationship already exists")
 //	case model.RelationshipStatusPending:
-//		return appError(http.StatusConflict, "relationship request already exists")
+//		return httpresp.NewError(http.StatusConflict, "relationship request already exists")
 //	default:
-//		return appError(http.StatusConflict, "relationship already exists")
+//		return httpresp.NewError(http.StatusConflict, "relationship already exists")
 //	}
 //}
 //

@@ -12,13 +12,8 @@ import (
 	"time"
 
 	"github.com/gauas/account-service/model"
-	"github.com/gauas/account-service/packages/httpresp"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func appError(code int, msg string) error {
-	return httpresp.NewError(code, msg)
-}
 
 func hashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(
