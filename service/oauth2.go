@@ -41,7 +41,7 @@ func (s *Service) TryOAuth2(ctx context.Context, providerName string, token stri
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return s.NewOAuthAccount(ctx, data, deviceID)
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -110,11 +110,6 @@ func (s *Service) NewOAuthAccount(ctx context.Context, data *oauth2.UserInfo, de
 		return nil, err
 	}
 
-	verification, err := newVerification(data)
-	if err != nil {
-		return nil, err
-	}
-
 	err = s.Repository.Transaction(ctx,
 		func(ctx context.Context) error {
 			if _, err = s.Repository.User.Create(ctx, user); err != nil {
@@ -125,16 +120,12 @@ func (s *Service) NewOAuthAccount(ctx context.Context, data *oauth2.UserInfo, de
 			if _, err = s.Repository.Identity.Create(ctx, identity); err != nil {
 				return err
 			}
-			if verification == nil {
+
+			if data.Email == nil || *data.Email == "" || !data.EmailVerified {
 				return nil
 			}
 
-			verification.UserID = user.ID
-			if _, err = s.Repository.Verification.Create(ctx, verification); err != nil {
-				return err
-			}
-
-			return nil
+			return s.verifyEmail(ctx, user.ID, *data.Email)
 		},
 	)
 	if err != nil {

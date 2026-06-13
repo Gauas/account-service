@@ -6,6 +6,7 @@ import (
 	"github.com/gauas/account-service/controller/mfas/totp"
 	"github.com/gauas/account-service/controller/profile"
 	"github.com/gauas/account-service/controller/relationship"
+	"github.com/gauas/account-service/controller/verification"
 	"github.com/gauas/account-service/service"
 )
 
@@ -14,7 +15,7 @@ type Controller struct {
 	Profile        *profile.Handler
 	Relationship   *relationship.Handler
 	TOTP           *totp.Handler
-	//Verification   *verification.Handler
+	Verification   *verification.Handler
 }
 
 func New(svc *service.Service, cfg *config.Config) *Controller {
@@ -23,6 +24,6 @@ func New(svc *service.Service, cfg *config.Config) *Controller {
 		Profile:        profile.New(svc, cfg),
 		Relationship:   relationship.New(svc, cfg),
 		TOTP:           totp.New(svc, cfg),
-		//Verification:   verification.New(svc, cfg),
+		Verification:   verification.New(svc, cfg),
 	}
 }

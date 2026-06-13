@@ -42,12 +42,13 @@ CREATE TABLE IF NOT EXISTS verifications (
     id              UUID PRIMARY KEY,
     user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     method          VARCHAR(20) NOT NULL,
-    value           VARCHAR(255) NOT NULL,
+    target          VARCHAR(255) NOT NULL,
+    value           VARCHAR(6) NOT NULL,
     is_verified     BOOLEAN NOT NULL DEFAULT FALSE,
     verified_at     TIMESTAMP,
     created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
 
-    UNIQUE (user_id, method, value)
+    UNIQUE (user_id, method, target)
 );
 
 CREATE INDEX IF NOT EXISTS idx_verifications_user_id ON verifications(user_id);
